@@ -255,6 +255,7 @@ public class ChessBoard {
 	}
 
 	private boolean checkBlackKing(int startX, int startY, int endX, int endY) {
+		//TODO check that we are still at least one square away from the white king
 		return (Math.abs(startX - endX) <= 1 && Math.abs(startY - endY) <= 1 && !chessPieces[endX][endY]
 				.toString().contains("black"));
 	}
@@ -379,6 +380,7 @@ public class ChessBoard {
 	}
 
 	private boolean checkWhiteKing(int startX, int startY, int endX, int endY) {
+		//TODO check that we are still at least one square away from the black king
 		return (Math.abs(startX - endX) <= 1 && Math.abs(startY - endY) <= 1 && !chessPieces[endX][endY]
 				.toString().contains("white"));
 	}
@@ -496,5 +498,32 @@ public class ChessBoard {
 
 	public ChessPiece getPiece(int xPos, int yPos) {
 		return chessPieces[xPos][yPos];
+	}
+
+	/**
+	 * Helper method to determine if black King is in check
+	 * @return
+	 */
+	public boolean blackInCheck() {
+		// go through every white piece on the board to see if it can take the black king in one move
+		
+		// if the white piece is a pawn, king must be x+1 and y+/-1
+		// rook, on the same line and a move to there would be valid
+		// knight, x+/-2,y+/-1 x+/-1,y+/-2 checking if the black king is on each square
+		// bishop, on the same diagonal and a move to there would be valid
+		// queen, check as if rook and bishop
+		// king, nothing.  king move method should stop the kings from getting within a square of each other
+		
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	/**
+	 * Helper method to determine if white King is in check
+	 * @return
+	 */
+	public boolean whiteInCheck() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }
