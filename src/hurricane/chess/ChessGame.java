@@ -44,78 +44,87 @@ public class ChessGame {
 	private void loadImages() {
 		images = new HashMap<String, BufferedImage>();
 		try {
-			images.put("blackbishop", ImageIO.read(new File(
-					"src/hurricane/chess/res/Bishop_Black-10.png")));
-			images.put("whitebishop", ImageIO.read(new File(
-					"src/hurricane/chess/res/Bishop_White-10.png")));
-			images.put("blackking", ImageIO.read(new File(
-					"src/hurricane/chess/res/King_Black-10.png")));
-			images.put("whiteking", ImageIO.read(new File(
-					"src/hurricane/chess/res/King_White-10.png")));
-			images.put("blackknight", ImageIO.read(new File(
-					"src/hurricane/chess/res/Knight_Black-10.png")));
-			images.put("whiteknight", ImageIO.read(new File(
-					"src/hurricane/chess/res/Knight_White-10.png")));
-			images.put("blackpawn", ImageIO.read(new File(
-					"src/hurricane/chess/res/Pawn_Black-10.png")));
-			images.put("whitepawn", ImageIO.read(new File(
-					"src/hurricane/chess/res/Pawn_White-10.png")));
-			images.put("blackqueen", ImageIO.read(new File(
-					"src/hurricane/chess/res/Queen_Black-10.png")));
-			images.put("whitequeen", ImageIO.read(new File(
-					"src/hurricane/chess/res/Queen_White-10.png")));
-			images.put("blackrook", ImageIO.read(new File(
-					"src/hurricane/chess/res/Rook_Black-10.png")));
-			images.put("whiterook", ImageIO.read(new File(
-					"src/hurricane/chess/res/Rook_White-10.png")));
+			images.put("blackbishop", ImageIO.read(new File("src/hurricane/chess/res/Bishop_Black-10.png")));
+			images.put("whitebishop", ImageIO.read(new File("src/hurricane/chess/res/Bishop_White-10.png")));
+			images.put("blackking", ImageIO.read(new File("src/hurricane/chess/res/King_Black-10.png")));
+			images.put("whiteking", ImageIO.read(new File("src/hurricane/chess/res/King_White-10.png")));
+			images.put("blackknight", ImageIO.read(new File("src/hurricane/chess/res/Knight_Black-10.png")));
+			images.put("whiteknight", ImageIO.read(new File("src/hurricane/chess/res/Knight_White-10.png")));
+			images.put("blackpawn", ImageIO.read(new File("src/hurricane/chess/res/Pawn_Black-10.png")));
+			images.put("whitepawn", ImageIO.read(new File("src/hurricane/chess/res/Pawn_White-10.png")));
+			images.put("blackqueen", ImageIO.read(new File("src/hurricane/chess/res/Queen_Black-10.png")));
+			images.put("whitequeen", ImageIO.read(new File("src/hurricane/chess/res/Queen_White-10.png")));
+			images.put("blackrook", ImageIO.read(new File("src/hurricane/chess/res/Rook_Black-10.png")));
+			images.put("whiterook", ImageIO.read(new File("src/hurricane/chess/res/Rook_White-10.png")));
 		} catch (IOException e) {
 			System.err.print("Image files could not be loaded\n");
 		}
 	}
 
-	public boolean move(int startX, int startY, int endX, int endY,
-			JTextArea outputArea) {
-		outputArea.append(startX + ", " + startY + ", " + endX + ", " + endY
-				+ "\n");
+	public boolean move(int startX, int startY, int endX, int endY, JTextArea outputArea) {
+		outputArea.append(startX + ", " + startY + ", " + endX + ", " + endY + "\n");
 		// check the correct colour is being moved, the spot to move contains a
 		// piece of the correct colour
+		
+		// Set in check
+		blackInCheck = board.blackInCheck();
+		whiteInCheck = board.whiteInCheck();
 		String piece = board.getPiece(startX, startY).toString();
-		if (piece.contains(turn.toString())
-				&& board.movePiece(startX, startY, endX, endY)) {
-			if (turn == Turn.black) {
-				turn = Turn.white;
-			} else {
-				turn = Turn.black;
-			}
+		if (piece.contains(turn.toString())&& board.movePiece(startX, startY, endX, endY)) {
+
+			blackInCheck = board.blackInCheck();
+			whiteInCheck = board.whiteInCheck();
+			
+			// TODO replace this nonsense with an undo method in the chessboard class IMO
+			// that way we can say, if (currentmoverincheck) { board.undo return false }
+			// then we can get rid of this silly stack of board states that seems to be causing other problems like phantom moves
+			
 			// add the current board state to the list of moves
-			moveList.push(board);
-			// TODO put in check logic
+			moveList.push(new ChessBoard(board));
+			this.board = moveList.peek();
+
 			if (currentMoverInCheck()) {
 				// if we get in here the move is illegal as their king is now in
 				// check.
 				// roll back the turn and return false
 				moveList.pop();
-				if (turn == Turn.black) {
-					turn = Turn.white;
-				} else {
-					turn = Turn.black;
-				}
-				outputArea
-						.append("Illegal move, King cannot be in check at the end of turn. ");
-				outputArea.append("It is " + turn.toString() + "'s turn now."
-						+ "\n");
+				this.board = moveList.peek();
+				outputArea.append("Illegal move, King cannot be in check at the end of turn. ");
+				outputArea.append("It is " + turn.toString() + "'s turn now.\n");
 				return false;
 			}
-			// board.printBoard();
+			if (whiteInCheck) {
+				outputArea.append("White is in check!\n");
+			}
+			if (blackInCheck) {
+				outputArea.append("Black is in check!\n");
+			}
+			toggleTurn();
 			outputArea.append("Successful move. ");
-			outputArea.append("It is " + turn.toString() + "'s turn now."
-					+ "\n");
+			outputArea.append("It is " + turn.toString() + "'s turn now.\n");
+
 			return true;
 		} else {
-			outputArea.append("Failed move. ");
-			outputArea.append("It is " + turn.toString() + "'s turn now."
-					+ "\n");
+			if (whiteInCheck) {
+				outputArea.append("White is in check!");
+			}
+			if (blackInCheck) {
+				outputArea.append("Black is in check!");
+			}
+			outputArea.append("That move is not allowed!. ");
+			outputArea.append("It is " + turn.toString() + "'s turn now." + "\n");
 			return false;
+		}
+	}
+
+	/**
+	 * 
+	 */
+	private void toggleTurn() {
+		if (turn == Turn.black) {
+			turn = Turn.white;
+		} else {
+			turn = Turn.black;
 		}
 	}
 
@@ -137,14 +146,12 @@ public class ChessGame {
 
 	public BufferedImage makeImage() {
 		try {
-			chessBoardImage = ImageIO.read(new File(
-					"src/hurricane/chess/res/chessboard.png"));
+			chessBoardImage = ImageIO.read(new File("src/hurricane/chess/res/chessboard.png"));
 		} catch (IOException e) {
 			System.err.print("Image files could not be loaded\n");
 		}
 		Graphics2D g = chessBoardImage.createGraphics();
-		g.setComposite(AlphaComposite
-				.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 		int startValue = 20;
 		int increment = 75;
 		int pieceX = 7;
@@ -162,8 +169,7 @@ public class ChessGame {
 					pieceX--;
 					continue;
 				}
-				g.drawImage(images.get(nextPiece), startValue + i * increment,
-						startValue + j * increment, null);
+				g.drawImage(images.get(nextPiece), startValue + i * increment, startValue + j * increment, null);
 				pieceX--;
 			}
 			pieceY++;
