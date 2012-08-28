@@ -17,8 +17,6 @@ public class ChessGame {
 
 	public ChessBoard board;
 	private Turn turn;
-	private boolean whiteInCheck;
-	private boolean blackInCheck;
 	// Store the list of moves as a stack of board states
 	private Stack<ChessBoard> moveList;
 	private BufferedImage chessBoardImage;
@@ -36,8 +34,6 @@ public class ChessGame {
 		moveList = new Stack<ChessBoard>();
 		moveList.push(board);
 		turn = Turn.white;
-		whiteInCheck = false;
-		blackInCheck = false;
 		loadImages();
 	}
 
@@ -66,22 +62,22 @@ public class ChessGame {
 		// check the correct colour is being moved, the spot to move contains a
 		// piece of the correct colour
 		
-		// Set in check
-		blackInCheck = board.blackInCheck();
-		whiteInCheck = board.whiteInCheck();
 		String piece = board.getPiece(startX, startY).toString();
 		if (piece.contains(turn.toString())&& board.movePiece(startX, startY, endX, endY)) {
 
-			blackInCheck = board.blackInCheck();
-			whiteInCheck = board.whiteInCheck();
 			
 			// TODO replace this nonsense with an undo method in the chessboard class IMO
 			// that way we can say, if (currentmoverincheck) { board.undo return false }
 			// then we can get rid of this silly stack of board states that seems to be causing other problems like phantom moves
 			
+			// TODO attempt to make a move that leaves your king in check.  move is denied.  make a different move that covers the check
+			// then both moves happen.  if you attempt a move that leaves your king in check, it locks you into a state where 
+			// you cant make another move unless you move another piece to block the check and then both moves happen
+			
 			// add the current board state to the list of moves
-			moveList.push(new ChessBoard(board));
-			this.board = moveList.peek();
+			//moveList.push(new ChessBoard(board));
+			//this.board = moveList.peek();
+			moveList.push(this.board);
 
 			if (currentMoverInCheck()) {
 				// if we get in here the move is illegal as their king is now in
@@ -89,14 +85,14 @@ public class ChessGame {
 				// roll back the turn and return false
 				moveList.pop();
 				this.board = moveList.peek();
-				outputArea.append("Illegal move, King cannot be in check at the end of turn. ");
+				outputArea.append("King cannot be in check at the end of turn. ");
 				outputArea.append("It is " + turn.toString() + "'s turn now.\n");
 				return false;
 			}
-			if (whiteInCheck) {
+			if (board.whiteInCheck()) {
 				outputArea.append("White is in check!\n");
 			}
-			if (blackInCheck) {
+			if (board.blackInCheck()) {
 				outputArea.append("Black is in check!\n");
 			}
 			toggleTurn();
@@ -105,13 +101,13 @@ public class ChessGame {
 
 			return true;
 		} else {
-			if (whiteInCheck) {
+			if (board.whiteInCheck()) {
 				outputArea.append("White is in check!");
 			}
-			if (blackInCheck) {
+			if (board.blackInCheck()) {
 				outputArea.append("Black is in check!");
 			}
-			outputArea.append("That move is not allowed!. ");
+			outputArea.append("Invalid move!. ");
 			outputArea.append("It is " + turn.toString() + "'s turn now." + "\n");
 			return false;
 		}

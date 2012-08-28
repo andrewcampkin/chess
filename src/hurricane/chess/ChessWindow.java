@@ -25,7 +25,8 @@ import javax.swing.BoxLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JScrollPane;
-
+// TODO the code that updates the screen state is inside the mouse listener method.
+// this is bad!
 public class ChessWindow {
 
 	private JFrame frmChess;
