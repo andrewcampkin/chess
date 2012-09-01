@@ -8,8 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
-
 import javax.imageio.ImageIO;
 import javax.swing.JTextArea;
 
@@ -17,8 +15,6 @@ public class ChessGame {
 
 	public ChessBoard board;
 	private Turn turn;
-	// Store the list of moves as a stack of board states
-	private Stack<ChessBoard> moveList;
 	private BufferedImage chessBoardImage;
 	private Map<String, BufferedImage> images;
 
@@ -31,8 +27,6 @@ public class ChessGame {
 	 */
 	public ChessGame() {
 		board = new ChessBoard();
-		moveList = new Stack<ChessBoard>();
-		moveList.push(board);
 		turn = Turn.white;
 		loadImages();
 	}
@@ -64,52 +58,37 @@ public class ChessGame {
 		
 		String piece = board.getPiece(startX, startY).toString();
 		if (piece.contains(turn.toString())&& board.movePiece(startX, startY, endX, endY)) {
-
-			
-			// TODO replace this nonsense with an undo method in the chessboard class IMO
-			// that way we can say, if (currentmoverincheck) { board.undo return false }
-			// then we can get rid of this silly stack of board states that seems to be causing other problems like phantom moves
-			
-			// TODO attempt to make a move that leaves your king in check.  move is denied.  make a different move that covers the check
-			// then both moves happen.  if you attempt a move that leaves your king in check, it locks you into a state where 
-			// you cant make another move unless you move another piece to block the check and then both moves happen
-			
-			// add the current board state to the list of moves
-			//moveList.push(new ChessBoard(board));
-			//this.board = moveList.peek();
-			moveList.push(this.board);
-
 			if (currentMoverInCheck()) {
-				// if we get in here the move is illegal as their king is now in
-				// check.
-				// roll back the turn and return false
-				moveList.pop();
-				this.board = moveList.peek();
+				// move is illegal as the king is now in check. Roll back the turn and return false.
+				board.revertMove();
+				printInCheck(outputArea);
 				outputArea.append("King cannot be in check at the end of turn. ");
 				outputArea.append("It is " + turn.toString() + "'s turn now.\n");
 				return false;
 			}
-			if (board.whiteInCheck()) {
-				outputArea.append("White is in check!\n");
-			}
-			if (board.blackInCheck()) {
-				outputArea.append("Black is in check!\n");
-			}
+			printInCheck(outputArea);
 			toggleTurn();
 			outputArea.append("Successful move. ");
 			outputArea.append("It is " + turn.toString() + "'s turn now.\n");
 
 			return true;
 		} else {
-			if (board.whiteInCheck()) {
-				outputArea.append("White is in check!");
-			}
-			if (board.blackInCheck()) {
-				outputArea.append("Black is in check!");
-			}
+			printInCheck(outputArea);
 			outputArea.append("Invalid move!. ");
 			outputArea.append("It is " + turn.toString() + "'s turn now." + "\n");
 			return false;
+		}
+	}
+
+	/**
+	 * @param outputArea
+	 */
+	private void printInCheck(JTextArea outputArea) {
+		if (board.whiteInCheck()) {
+			outputArea.append("White is in check!\n");
+		}
+		if (board.blackInCheck()) {
+			outputArea.append("Black is in check!\n");
 		}
 	}
 

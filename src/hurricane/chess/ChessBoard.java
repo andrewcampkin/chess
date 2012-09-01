@@ -1,6 +1,8 @@
 package hurricane.chess;
 
 /**
+ * Class to represent the current state of the chess board and provide methods to manipulate the game.
+ * 
  * TODO figure out castleing
  * 
  * @author Andrew
@@ -16,6 +18,18 @@ public class ChessBoard {
 	private int pawnEPPosition;
 	private boolean EPLastMove;
 
+	/* Holder variables to enable moves to be rolled back */
+	private ChessPiece[][] prev_chessPieces;
+	private int prev_blackKingX;
+	private int prev_blackKingY;
+	private int prev_whiteKingX;
+	private int prev_whiteKingY;
+	private int prev_pawnEPPosition;
+	private boolean prev_EPLastMove;
+	
+	/**
+	 * Default constructor
+	 */
 	public ChessBoard() {
 		// initialise the board with standard setup for the start of a chess
 		// game
@@ -23,16 +37,6 @@ public class ChessBoard {
 		pawnEPPosition = -1;
 		EPLastMove = false;
 		initialisePieces();
-	}
-
-	public ChessBoard(ChessBoard newBoard) {
-		chessPieces = newBoard.chessPieces;
-		blackKingX = newBoard.blackKingX;
-		blackKingY = newBoard.blackKingY;
-		whiteKingX = newBoard.whiteKingX;
-		whiteKingY = newBoard.whiteKingY;
-		pawnEPPosition = newBoard.pawnEPPosition;
-		EPLastMove = newBoard.EPLastMove;
 	}
 
 	/**
@@ -78,6 +82,8 @@ public class ChessBoard {
 			return false;
 		}
 
+		copyVariables();
+		
 		// have a validate method for each type of piece, so 12 validate methods
 		switch (currentPiece) {
 		case empty:
@@ -176,6 +182,32 @@ public class ChessBoard {
 		return true;
 	}
 
+	/**
+	 * Helper method to copy the class variables before each move to enable moves to be reverted.
+	 */
+	private void copyVariables() {
+		prev_chessPieces = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
+		for (int i = 0; i < BOARD_SIZE; i++) {
+			for (int j = 0; j < BOARD_SIZE; j++) {
+				prev_chessPieces[i][j] =  chessPieces[i][j];
+			}
+		}
+		prev_blackKingX = blackKingX;
+		prev_blackKingY = blackKingY;
+		prev_whiteKingX = whiteKingX;
+		prev_whiteKingY = whiteKingY;
+		prev_pawnEPPosition = pawnEPPosition;
+		prev_EPLastMove = EPLastMove;
+	}
+
+	/**
+	 * Methods to check the given move is valid.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the move is valid
+	 */
 	private boolean checkBlackPawn(int startX, int startY, int endX, int endY) {
 		return (startX - endX == 1 && startY == endY && chessPieces[endX][endY] == ChessPiece.empty)
 				|| (startX == 6 && endX == 4 && startY == endY
@@ -187,6 +219,14 @@ public class ChessBoard {
 						&& EPLastMove == true && endY == pawnEPPosition && endX == 2);
 	}
 
+	/**
+	 * Methods to check the given move is valid.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the move is valid
+	 */
 	private boolean checkBlackRook(int startX, int startY, int endX, int endY) {
 		// piece moves on same x or same y, and the path to the end point is
 		// clear, and the end point is either empty or has enemy piece
@@ -194,6 +234,14 @@ public class ChessBoard {
 				startX, startY, endX, endY)));
 	}
 
+	/**
+	 * Helper method to check if the path to the end position is clear.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the path is clear
+	 */
 	private boolean checkPathBlackRook(int startX, int startY, int endX,
 			int endY) {
 		
@@ -231,12 +279,28 @@ public class ChessBoard {
 		return true;
 	}
 
+	/**
+	 * Methods to check the given move is valid.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the move is valid
+	 */
 	private boolean checkBlackKnight(int startX, int startY, int endX, int endY) {
 		return (((Math.abs(startX - endX) == 2 && Math.abs(startY - endY) == 1) || (Math
 				.abs(startX - endX) == 1 && Math.abs(startY - endY) == 2)) && !chessPieces[endX][endY]
 				.toString().contains("black"));
 	}
 
+	/**
+	 * Methods to check the given move is valid.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the move is valid
+	 */
 	private boolean checkBlackBishop(int startX, int startY, int endX, int endY) {
 		// piece moves on same x and same y, and the path to the end point is
 		// clear, and the end point is either empty or has enemy piece
@@ -244,6 +308,14 @@ public class ChessBoard {
 				startX, startY, endX, endY)));
 	}
 
+	/**
+	 * Helper method to check if the path to the end position is clear.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the path is clear
+	 */
 	private boolean checkPathBlackBishop(int startX, int startY, int endX,
 			int endY) {
 		String endPiece = chessPieces[endX][endY].toString();
@@ -297,6 +369,14 @@ public class ChessBoard {
 		return true;
 	}
 
+	/**
+	 * Methods to check the given move is valid.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the move is valid
+	 */
 	private boolean checkBlackQueen(int startX, int startY, int endX, int endY) {
 		// either startx-endx = starty-endy or starty=endy or startx=endx, and
 		// the way is clear. Call check bishop or check rook method depending
@@ -310,11 +390,27 @@ public class ChessBoard {
 		}
 	}
 
+	/**
+	 * Methods to check the given move is valid.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the move is valid
+	 */
 	private boolean checkBlackKing(int startX, int startY, int endX, int endY) {
 		return Math.abs(startX - endX) <= 1 && Math.abs(startY - endY) <= 1 && !chessPieces[endX][endY]
 				.toString().contains("black") && (Math.abs(blackKingX - whiteKingX) > 1 || Math.abs(blackKingY - whiteKingY) > 1);
 	}
 
+	/**
+	 * Methods to check the given move is valid.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the move is valid
+	 */
 	private boolean checkWhitePawn(int startX, int startY, int endX, int endY) {
 		return (endX - startX == 1 && startY == endY && chessPieces[endX][endY] == ChessPiece.empty)
 				|| (startX == 1 && endX == 3 && startY == endY
@@ -324,12 +420,28 @@ public class ChessBoard {
 						&& EPLastMove && endY == pawnEPPosition && endX == 5);
 	}
 
+	/**
+	 * Methods to check the given move is valid.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the move is valid
+	 */
 	private boolean checkWhiteRook(int startX, int startY, int endX, int endY) {
 		// piece moves on same x or same y, and the path to the end point is
 		// clear, and the end point is either empty or has enemy piece
 		return ((startX == endX || startY == endY) && (checkPathWhiteRook(startX, startY, endX, endY)));
 	}
 
+	/**
+	 * Helper method to check if the path to the end position is clear.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the path is clear
+	 */
 	private boolean checkPathWhiteRook(int startX, int startY, int endX,
 			int endY) {
 		
@@ -367,12 +479,28 @@ public class ChessBoard {
 		return true;
 	}
 
+	/**
+	 * Methods to check the given move is valid.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the move is valid
+	 */
 	private boolean checkWhiteKnight(int startX, int startY, int endX, int endY) {
 		return (((Math.abs(startX - endX) == 2 && Math.abs(startY - endY) == 1) || (Math
 				.abs(startX - endX) == 1 && Math.abs(startY - endY) == 2)) && !chessPieces[endX][endY]
 				.toString().contains("white"));
 	}
 
+	/**
+	 * Methods to check the given move is valid.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the move is valid
+	 */
 	private boolean checkWhiteBishop(int startX, int startY, int endX, int endY) {
 		// piece moves on same x and same y, and the path to the end point is
 		// clear, and the end point is either empty or has enemy piece
@@ -380,6 +508,14 @@ public class ChessBoard {
 				startX, startY, endX, endY)));
 	}
 
+	/**
+	 * Helper method to check if the path to the end position is clear.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the path is clear
+	 */
 	private boolean checkPathWhiteBishop(int startX, int startY, int endX,
 			int endY) {
 		String endPiece = chessPieces[endX][endY].toString();
@@ -433,6 +569,14 @@ public class ChessBoard {
 		return true;
 	}
 
+	/**
+	 * Methods to check the given move is valid.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the move is valid
+	 */
 	private boolean checkWhiteQueen(int startX, int startY, int endX, int endY) {
 		// either startx-endx = starty-endy or starty=endy or startx=endx, and
 		// the way is clear. Call check bishop or check rook method depending
@@ -446,6 +590,14 @@ public class ChessBoard {
 		}
 	}
 
+	/**
+	 * Methods to check the given move is valid.
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @return true if the move is valid
+	 */
 	private boolean checkWhiteKing(int startX, int startY, int endX, int endY) {
 		return Math.abs(startX - endX) <= 1 && Math.abs(startY - endY) <= 1 && !chessPieces[endX][endY]
 				.toString().contains("white") && (Math.abs(blackKingX - whiteKingX) > 1 || Math.abs(blackKingY - whiteKingY) > 1);
@@ -565,6 +717,12 @@ public class ChessBoard {
 				+ "  " + 5 + "  " + 6 + "  " + 7 + "\n");
 	}
 
+	/**
+	 * Helper method to find piece at given position on the chess board.
+	 * @param xPos
+	 * @param yPos
+	 * @return The chess piece at position xPos, yPos
+	 */
 	public ChessPiece getPiece(int xPos, int yPos) {
 		return chessPieces[xPos][yPos];
 	}
@@ -711,6 +869,25 @@ public class ChessBoard {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * Method to roll back a move.  Will return the chessboard class to its previous state.
+	 */
+	public void revertMove() {
+		// Make copies of each class variable at the start of each move.  Use these copy variables to revert move here.
+		chessPieces = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
+		for (int i = 0; i < BOARD_SIZE; i++) {
+			for (int j = 0; j < BOARD_SIZE; j++) {
+				chessPieces[i][j] =  prev_chessPieces[i][j];
+			}
+		}
+		blackKingX = prev_blackKingX;
+		blackKingY = prev_blackKingY;
+		whiteKingX = prev_whiteKingX;
+		whiteKingY = prev_whiteKingY;
+		pawnEPPosition = prev_pawnEPPosition;
+		EPLastMove = prev_EPLastMove;
 	}
 }
 
