@@ -578,6 +578,8 @@ public class ChessBoard {
 	 * @return true if the move is valid
 	 */
 	private boolean checkWhiteQueen(int startX, int startY, int endX, int endY) {
+		// TODO problem with white queen, reproduce push pawn 2 squares then try to move queen up to square right behind pawn.
+		// (2 square move) seems to be a problem with the rook method
 		// either startx-endx = starty-endy or starty=endy or startx=endx, and
 		// the way is clear. Call check bishop or check rook method depending
 		// on which way it moves

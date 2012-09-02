@@ -25,12 +25,22 @@ import javax.swing.BoxLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JScrollPane;
-// TODO the code that updates the screen state is inside the mouse listener method.
-// this is bad!
+import java.awt.Canvas;
+// TODO The code that updates the screen state is inside the mouse listener method.  This is bad! Should I spawn a new thread that remakes the image?
+// TODO Do something about the awful layout with the elongated menu.  
+// TODO Fix the fact that the entire game screen is an icon for a jlabel.
+
+// Consider using graphics2D to achieve all of this, by remaking the game screen part.  Create a graphics2D object from a component.
+// Does this mean i can get a graphics2D object from a jframe or some such thing?
+
+// canvas component under AWT components...  make one of them and use it to get graphics2D
+// then draw a series of rectangles of light and dark colours, and draw the pieces onto that according to the game state.
+
 public class ChessWindow {
 
 	private JFrame frmChess;
 	private ChessGame myGame;
+	/** Used to determine clicks on chess board. */
 	private boolean firstClick;
 	private Point firstPoint, secondPoint;
 	JLabel lblNewLabel;
@@ -58,7 +68,6 @@ public class ChessWindow {
 	public ChessWindow() {
 		myGame = new ChessGame();
 		initialize();
-
 	}
 
 	/**
@@ -79,43 +88,47 @@ public class ChessWindow {
 
 		JMenuBar menuBar = new JMenuBar();
 		menu_panel.add(menuBar);
-		
-				JMenu options_menu = new JMenu("Options");
-				menuBar.add(options_menu);
-				options_menu.setHorizontalAlignment(SwingConstants.LEFT);
-				
-						JMenuItem newgame_menu = new JMenuItem("New game");
-						newgame_menu
-								.setIcon(new ImageIcon(
-										ChessWindow.class
-												.getResource("/com/sun/java/swing/plaf/windows/icons/TreeLeaf.gif")));
-						options_menu.add(newgame_menu);
-						
-								JMenuItem exit_menu = new JMenuItem("Exit");
-								exit_menu
-										.setIcon(new ImageIcon(
-												ChessWindow.class
-														.getResource("/javax/swing/plaf/metal/icons/ocean/collapsed-rtl.gif")));
-								exit_menu.addActionListener(new ActionListener() {
-									public void actionPerformed(ActionEvent arg0) {
-										System.exit(0);
-									}
-								});
-								
-										JMenuItem savegame_menu = new JMenuItem("Save game");
-										savegame_menu
-												.setIcon(new ImageIcon(
-														ChessWindow.class
-																.getResource("/com/sun/java/swing/plaf/windows/icons/FloppyDrive.gif")));
-										options_menu.add(savegame_menu);
-										
-												JMenuItem loadgame_menu = new JMenuItem("Load saved game");
-												loadgame_menu
-														.setIcon(new ImageIcon(
-																ChessWindow.class
-																		.getResource("/com/sun/java/swing/plaf/windows/icons/TreeOpen.gif")));
-												options_menu.add(loadgame_menu);
-												options_menu.add(exit_menu);
+		JMenu options_menu = new JMenu("Options");
+		menuBar.add(options_menu);
+		options_menu.setHorizontalAlignment(SwingConstants.LEFT);
+		JMenuItem newgame_menu = new JMenuItem("New game");
+		newgame_menu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				myGame = new ChessGame();
+				firstClick = false;
+				Image img = myGame.makeImage();
+				if (img != null && lblNewLabel != null) {
+					lblNewLabel.setIcon(new ImageIcon(img));
+				}
+				if (outputArea != null) {
+					outputArea.setText(null);
+				}
+			}
+		});
+		newgame_menu.setIcon(new ImageIcon(ChessWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/TreeLeaf.gif")));
+		options_menu.add(newgame_menu);
+		JMenuItem exit_menu = new JMenuItem("Exit");
+		exit_menu.setIcon(new ImageIcon(ChessWindow.class.getResource("/javax/swing/plaf/metal/icons/ocean/collapsed-rtl.gif")));
+		exit_menu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				System.exit(0);
+			}
+		});
+
+		JMenuItem savegame_menu = new JMenuItem("Save game");
+		savegame_menu
+				.setIcon(new ImageIcon(
+						ChessWindow.class
+								.getResource("/com/sun/java/swing/plaf/windows/icons/FloppyDrive.gif")));
+		options_menu.add(savegame_menu);
+
+		JMenuItem loadgame_menu = new JMenuItem("Load saved game");
+		loadgame_menu
+				.setIcon(new ImageIcon(
+						ChessWindow.class
+								.getResource("/com/sun/java/swing/plaf/windows/icons/TreeOpen.gif")));
+		options_menu.add(loadgame_menu);
+		options_menu.add(exit_menu);
 
 		JMenu help_menu = new JMenu("Help");
 		help_menu.setHorizontalAlignment(SwingConstants.LEFT);
@@ -210,6 +223,10 @@ public class ChessWindow {
 		}
 		lblNewLabel.setVerticalAlignment(SwingConstants.TOP);
 		chess_board.add(lblNewLabel);
+		
+		MyCanvas canvas = new MyCanvas();
+		canvas.prepareImage(img, chess_board);
+		chess_board.add(canvas);
 	}
 
 }
