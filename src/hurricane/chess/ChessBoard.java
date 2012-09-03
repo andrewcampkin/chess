@@ -263,13 +263,13 @@ public class ChessBoard {
 		}
 		
 		if(startX == endX) {
-			for (int i = startY; i < endY - 1; i++) {
+			for (int i = startY + 1; i < endY - 1; i++) {
 				if (chessPieces[startX][i] != ChessPiece.empty) {
 					return false;
 				}
 			}
 		} else {
-			for (int i = startX; i < endX - 1; i++) {
+			for (int i = startX + 1; i < endX - 1; i++) {
 				if (chessPieces[i][startY] != ChessPiece.empty) {
 					return false;
 				}
@@ -463,13 +463,13 @@ public class ChessBoard {
 		}
 		
 		if(startX == endX) {
-			for (int i = startY; i < endY - 1; i++) {
+			for (int i = startY + 1; i < endY - 1; i++) {
 				if (chessPieces[startX][i] != ChessPiece.empty) {
 					return false;
 				}
 			}
 		} else {
-			for (int i = startX; i < endX - 1; i++) {
+			for (int i = startX + 1; i < endX - 1; i++) {
 				if (chessPieces[i][startY] != ChessPiece.empty) {
 					return false;
 				}
