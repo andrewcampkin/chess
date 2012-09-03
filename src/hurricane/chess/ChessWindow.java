@@ -2,7 +2,6 @@ package hurricane.chess;
 
 import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.Image;
 import java.awt.Point;
 
 import javax.swing.JFrame;
@@ -19,16 +18,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
-import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import javax.swing.BoxLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JScrollPane;
-import java.awt.Canvas;
-// TODO The code that updates the screen state is inside the mouse listener method.  This is bad! Should I spawn a new thread that remakes the image?
-// TODO Do something about the awful layout with the elongated menu.  
-// TODO Fix the fact that the entire game screen is an icon for a jlabel.
+
 
 // Consider using graphics2D to achieve all of this, by remaking the game screen part.  Create a graphics2D object from a component.
 // Does this mean i can get a graphics2D object from a jframe or some such thing?
@@ -39,12 +34,13 @@ import java.awt.Canvas;
 public class ChessWindow {
 
 	private JFrame frmChess;
-	private ChessGame myGame;
+	public ChessGame myGame;
 	/** Used to determine clicks on chess board. */
 	private boolean firstClick;
 	private Point firstPoint, secondPoint;
-	JLabel lblNewLabel;
+	//JLabel lblNewLabel;
 	JTextArea outputArea;
+	//Canvas canvas;
 
 	/**
 	 * Launch the application.
@@ -81,8 +77,7 @@ public class ChessWindow {
 		frmChess.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		JPanel menu_panel = new JPanel();
-		menu_panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null,
-				null, null));
+		menu_panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		frmChess.getContentPane().add(menu_panel, BorderLayout.WEST);
 		menu_panel.setLayout(new BoxLayout(menu_panel, BoxLayout.Y_AXIS));
 
@@ -96,10 +91,6 @@ public class ChessWindow {
 			public void actionPerformed(ActionEvent arg0) {
 				myGame = new ChessGame();
 				firstClick = false;
-				Image img = myGame.makeImage();
-				if (img != null && lblNewLabel != null) {
-					lblNewLabel.setIcon(new ImageIcon(img));
-				}
 				if (outputArea != null) {
 					outputArea.setText(null);
 				}
@@ -116,17 +107,11 @@ public class ChessWindow {
 		});
 
 		JMenuItem savegame_menu = new JMenuItem("Save game");
-		savegame_menu
-				.setIcon(new ImageIcon(
-						ChessWindow.class
-								.getResource("/com/sun/java/swing/plaf/windows/icons/FloppyDrive.gif")));
+		savegame_menu.setIcon(new ImageIcon(ChessWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/FloppyDrive.gif")));
 		options_menu.add(savegame_menu);
 
 		JMenuItem loadgame_menu = new JMenuItem("Load saved game");
-		loadgame_menu
-				.setIcon(new ImageIcon(
-						ChessWindow.class
-								.getResource("/com/sun/java/swing/plaf/windows/icons/TreeOpen.gif")));
+		loadgame_menu.setIcon(new ImageIcon(ChessWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/TreeOpen.gif")));
 		options_menu.add(loadgame_menu);
 		options_menu.add(exit_menu);
 
@@ -149,10 +134,7 @@ public class ChessWindow {
 				jd.setVisible(true);
 			}
 		});
-		about_menu
-				.setIcon(new ImageIcon(
-						ChessWindow.class
-								.getResource("/com/sun/java/swing/plaf/windows/icons/Inform.gif")));
+		about_menu.setIcon(new ImageIcon(ChessWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Inform.gif")));
 		help_menu.add(about_menu);
 
 		JMenuItem howtoplay_menu = new JMenuItem("How to play chess");
@@ -187,29 +169,16 @@ public class ChessWindow {
 		scrollPane.setViewportView(outputArea);
 
 		JPanel chess_board = new JPanel();
-
 		chess_board.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null,
 				null, null));
-		frmChess.getContentPane().add(chess_board, BorderLayout.CENTER);
-
-		lblNewLabel = new JLabel("");
-		lblNewLabel.addMouseListener(new MouseAdapter() {
+		chess_board.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
 				Point p = arg0.getPoint();
 				outputArea.append(p.x + ", " + p.y + "\n");
 				if (firstClick) {
 					secondPoint = p;
-
-					// System.out.println(firstPoint.x + ", " + firstPoint.y +
-					// ", " + secondPoint.x + ", " + secondPoint.y);
-
-					if (myGame.move(firstPoint, secondPoint, outputArea)) {
-						Image img = myGame.makeImage();
-						if (img != null) {
-							lblNewLabel.setIcon(new ImageIcon(img));
-						}
-					}
+					myGame.move(firstPoint, secondPoint, outputArea);
 					firstClick = false;
 				} else {
 					firstPoint = p;
@@ -217,16 +186,6 @@ public class ChessWindow {
 				}
 			}
 		});
-		Image img = myGame.makeImage();
-		if (img != null) {
-			lblNewLabel.setIcon(new ImageIcon(img));
-		}
-		lblNewLabel.setVerticalAlignment(SwingConstants.TOP);
-		chess_board.add(lblNewLabel);
-		
-		MyCanvas canvas = new MyCanvas();
-		canvas.prepareImage(img, chess_board);
-		chess_board.add(canvas);
+		frmChess.getContentPane().add(chess_board, BorderLayout.CENTER);
 	}
-
 }

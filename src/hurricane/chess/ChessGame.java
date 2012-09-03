@@ -14,8 +14,11 @@ import javax.swing.JTextArea;
 public class ChessGame {
 
 	public ChessBoard board;
+	/** Current turn status.  black or white */
 	private Turn turn;
+	/** Current image of the game board */
 	private BufferedImage chessBoardImage;
+	/** Stores the piece images in a map to their names */
 	private Map<String, BufferedImage> images;
 
 	public Turn getTurn() {
