@@ -85,11 +85,19 @@ public class ChessWindow {
 		menuBar.add(options_menu);
 		options_menu.setHorizontalAlignment(SwingConstants.LEFT);
 
+		//resets everything and starts a new game
 		JMenuItem newgame_menu = new JMenuItem("New game");
-		newgame_menu
-				.setIcon(new ImageIcon(
-						ChessWindow.class
-								.getResource("/com/sun/java/swing/plaf/windows/icons/TreeLeaf.gif")));
+		newgame_menu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				myGame = new ChessGame();
+				firstClick = false;
+				Image img = myGame.makeImage();
+				if (img != null) {
+					lblNewLabel.setIcon(new ImageIcon(img));
+				}
+			}
+		});
+		newgame_menu.setIcon(new ImageIcon(ChessWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/TreeLeaf.gif")));
 		options_menu.add(newgame_menu);
 
 		JMenuItem exit_menu = new JMenuItem("Exit");

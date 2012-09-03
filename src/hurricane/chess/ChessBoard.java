@@ -1,9 +1,10 @@
 package hurricane.chess;
 
 /**
- * Class to represent the current state of the chess board and provide methods to manipulate the game.
+ * Class to represent the current state of the chess board and provide methods
+ * to manipulate the game.
  * 
- * TODO figure out castleing
+ * TODO figure out castleing, pawn promotion
  * 
  * @author Andrew
  * 
@@ -11,12 +12,18 @@ package hurricane.chess;
 public class ChessBoard {
 	private ChessPiece[][] chessPieces;
 	private static final int BOARD_SIZE = 8;
-	private int blackKingX;
-	private int blackKingY;
-	private int whiteKingX;
-	private int whiteKingY;
+	public int blackKingX;
+	public int blackKingY;
+	public int whiteKingX;
+	public int whiteKingY;
 	private int pawnEPPosition;
 	private boolean EPLastMove;
+	private boolean whiteKingHasntMoved;
+	private boolean leftWhiteRookHasntMoved;
+	private boolean rightWhiteRookHasntMoved;
+	private boolean blackKingHasntMoved;
+	private boolean leftBlackRookHasntMoved;
+	private boolean rightBlackRookHasntMoved;
 
 	/* Holder variables to enable moves to be rolled back */
 	private ChessPiece[][] prev_chessPieces;
@@ -26,7 +33,13 @@ public class ChessBoard {
 	private int prev_whiteKingY;
 	private int prev_pawnEPPosition;
 	private boolean prev_EPLastMove;
-	
+	private boolean prev_whiteKingHasntMoved;
+	private boolean prev_leftWhiteRookHasntMoved;
+	private boolean prev_rightWhiteRookHasntMoved;
+	private boolean prev_blackKingHasntMoved;
+	private boolean prev_leftBlackRookHasntMoved;
+	private boolean prev_rightBlackRookHasntMoved;
+
 	/**
 	 * Default constructor
 	 */
@@ -36,6 +49,12 @@ public class ChessBoard {
 		chessPieces = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
 		pawnEPPosition = -1;
 		EPLastMove = false;
+		whiteKingHasntMoved = true;
+		leftWhiteRookHasntMoved = true;
+		rightWhiteRookHasntMoved = true;
+		blackKingHasntMoved = true;
+		leftBlackRookHasntMoved = true;
+		rightBlackRookHasntMoved = true;
 		initialisePieces();
 	}
 
@@ -83,7 +102,7 @@ public class ChessBoard {
 		}
 
 		copyVariables();
-		
+
 		// have a validate method for each type of piece, so 12 validate methods
 		switch (currentPiece) {
 		case empty:
@@ -92,8 +111,19 @@ public class ChessBoard {
 			if (!checkWhiteKing(startX, startY, endX, endY)) {
 				return false;
 			}
+			whiteKingHasntMoved = false;
 			whiteKingX = endX;
 			whiteKingY = endY;
+			//castle left side
+			if(startX == 0 && startY == 4 && endX == 0 && endY == 2) {
+				chessPieces[0][0] = ChessPiece.empty;
+				chessPieces[0][3] = ChessPiece.whiterook;
+			}
+			//castle right side
+			if(startX == 0 && startY == 4 && endX == 0 && endY == 6) {
+				chessPieces[0][7] = ChessPiece.empty;
+				chessPieces[0][5] = ChessPiece.whiterook;
+			}
 			break;
 		case whitequeen:
 			if (!checkWhiteQueen(startX, startY, endX, endY)) {
@@ -114,6 +144,12 @@ public class ChessBoard {
 			if (!checkWhiteRook(startX, startY, endX, endY)) {
 				return false;
 			}
+			if (startX == 0 && startY == 0) {
+				leftWhiteRookHasntMoved = false;
+			}
+			if (startX == 0 && startY == 7) {
+				rightWhiteRookHasntMoved = false;
+			}
 			break;
 		case whitepawn:
 			if (!checkWhitePawn(startX, startY, endX, endY)) {
@@ -121,7 +157,7 @@ public class ChessBoard {
 			}
 			if (endX - startX == 1 && Math.abs(startY - endY) == 1
 					&& chessPieces[endX][endY] == ChessPiece.empty
-					&& EPLastMove && endY == pawnEPPosition && endX == 5){
+					&& EPLastMove && endY == pawnEPPosition && endX == 5) {
 				chessPieces[endX - 1][endY] = ChessPiece.empty;
 			}
 			pawnEPPosition = -1;
@@ -135,8 +171,19 @@ public class ChessBoard {
 			if (!checkBlackKing(startX, startY, endX, endY)) {
 				return false;
 			}
+			blackKingHasntMoved = false;
 			blackKingX = endX;
 			blackKingY = endY;
+			//castle left side
+			if(startX == 7 && startY == 4 && endX == 7 && endY == 2) {
+				chessPieces[7][0] = ChessPiece.empty;
+				chessPieces[7][3] = ChessPiece.blackrook;
+			}
+			//castle right side
+			if(startX == 7 && startY == 4 && endX == 7 && endY == 6) {
+				chessPieces[7][7] = ChessPiece.empty;
+				chessPieces[7][5] = ChessPiece.blackrook;
+			}
 			break;
 		case blackqueen:
 			if (!checkBlackQueen(startX, startY, endX, endY)) {
@@ -156,6 +203,12 @@ public class ChessBoard {
 		case blackrook:
 			if (!checkBlackRook(startX, startY, endX, endY)) {
 				return false;
+			}
+			if (startX == 7 && startY == 0) {
+				leftBlackRookHasntMoved = false;
+			}
+			if (startX == 7 && startY == 7) {
+				rightBlackRookHasntMoved = false;
 			}
 			break;
 		case blackpawn:
@@ -183,13 +236,14 @@ public class ChessBoard {
 	}
 
 	/**
-	 * Helper method to copy the class variables before each move to enable moves to be reverted.
+	 * Helper method to copy the class variables before each move to enable
+	 * moves to be reverted.
 	 */
 	private void copyVariables() {
 		prev_chessPieces = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
 		for (int i = 0; i < BOARD_SIZE; i++) {
 			for (int j = 0; j < BOARD_SIZE; j++) {
-				prev_chessPieces[i][j] =  chessPieces[i][j];
+				prev_chessPieces[i][j] = chessPieces[i][j];
 			}
 		}
 		prev_blackKingX = blackKingX;
@@ -198,10 +252,17 @@ public class ChessBoard {
 		prev_whiteKingY = whiteKingY;
 		prev_pawnEPPosition = pawnEPPosition;
 		prev_EPLastMove = EPLastMove;
+		prev_whiteKingHasntMoved = whiteKingHasntMoved;
+		prev_leftWhiteRookHasntMoved = leftWhiteRookHasntMoved;
+		prev_rightWhiteRookHasntMoved = rightWhiteRookHasntMoved;
+		prev_blackKingHasntMoved = blackKingHasntMoved;
+		prev_leftBlackRookHasntMoved = leftBlackRookHasntMoved;
+		prev_rightBlackRookHasntMoved = rightBlackRookHasntMoved;
 	}
 
 	/**
 	 * Methods to check the given move is valid.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -221,6 +282,7 @@ public class ChessBoard {
 
 	/**
 	 * Methods to check the given move is valid.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -236,6 +298,7 @@ public class ChessBoard {
 
 	/**
 	 * Helper method to check if the path to the end position is clear.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -244,13 +307,13 @@ public class ChessBoard {
 	 */
 	private boolean checkPathBlackRook(int startX, int startY, int endX,
 			int endY) {
-		
+
 		String endPiece = chessPieces[endX][endY].toString();
-		
+
 		if (endPiece.contains("black")) {
 			return false;
 		}
-		
+
 		if (startX > endX) {
 			int temp = startX;
 			startX = endX;
@@ -261,8 +324,8 @@ public class ChessBoard {
 			startY = endY;
 			endY = temp;
 		}
-		
-		if(startX == endX) {
+
+		if (startX == endX) {
 			for (int i = startY + 1; i < endY - 1; i++) {
 				if (chessPieces[startX][i] != ChessPiece.empty) {
 					return false;
@@ -275,12 +338,13 @@ public class ChessBoard {
 				}
 			}
 		}
-		
+
 		return true;
 	}
 
 	/**
 	 * Methods to check the given move is valid.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -295,6 +359,7 @@ public class ChessBoard {
 
 	/**
 	 * Methods to check the given move is valid.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -310,6 +375,7 @@ public class ChessBoard {
 
 	/**
 	 * Helper method to check if the path to the end position is clear.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -371,6 +437,7 @@ public class ChessBoard {
 
 	/**
 	 * Methods to check the given move is valid.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -385,13 +452,14 @@ public class ChessBoard {
 			return checkPathBlackRook(startX, startY, endX, endY);
 		} else if (Math.abs(startX - endX) == Math.abs(startY - endY)) {
 			return checkPathBlackBishop(startX, startY, endX, endY);
-		}  else {
+		} else {
 			return false;
 		}
 	}
 
 	/**
 	 * Methods to check the given move is valid.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -399,12 +467,37 @@ public class ChessBoard {
 	 * @return true if the move is valid
 	 */
 	private boolean checkBlackKing(int startX, int startY, int endX, int endY) {
-		return Math.abs(startX - endX) <= 1 && Math.abs(startY - endY) <= 1 && !chessPieces[endX][endY]
-				.toString().contains("black") && (Math.abs(blackKingX - whiteKingX) > 1 || Math.abs(blackKingY - whiteKingY) > 1);
+		if (startX == 7 && startY == 4 && endX == 7 && endY == 2
+				&& blackKingHasntMoved && leftBlackRookHasntMoved) {
+			return castleLeftBlack();
+		}
+		if (startX == 7 && startY == 4 && endX == 7 && endY == 6
+				&& blackKingHasntMoved && rightBlackRookHasntMoved) {
+			return castleRightBlack();
+		}
+		return Math.abs(startX - endX) <= 1
+				&& Math.abs(startY - endY) <= 1
+				&& !chessPieces[endX][endY].toString().contains("black")
+				&& (Math.abs(blackKingX - whiteKingX) > 1 || Math
+						.abs(blackKingY - whiteKingY) > 1);
+	}
+
+	private boolean castleRightBlack() {
+		return chessPieces[7][5] == ChessPiece.empty
+				&& chessPieces[7][6] == ChessPiece.empty
+				&& !blackInCheck(7, 5) && !blackInCheck(7, 6);
+	}
+
+	private boolean castleLeftBlack() {
+		return chessPieces[7][3] == ChessPiece.empty
+				&& chessPieces[7][2] == ChessPiece.empty
+				&& chessPieces[7][1] == ChessPiece.empty
+				&& !blackInCheck(7, 3) && !blackInCheck(7, 2);
 	}
 
 	/**
 	 * Methods to check the given move is valid.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -415,13 +508,16 @@ public class ChessBoard {
 		return (endX - startX == 1 && startY == endY && chessPieces[endX][endY] == ChessPiece.empty)
 				|| (startX == 1 && endX == 3 && startY == endY
 						&& chessPieces[endX][endY] == ChessPiece.empty && chessPieces[endX - 1][endY] == ChessPiece.empty)
-				|| (endX - startX == 1 && Math.abs(startY - endY) == 1 && chessPieces[endX][endY].toString().contains("black"))
-				|| (endX - startX == 1 && Math.abs(startY - endY) == 1 && chessPieces[endX][endY] == ChessPiece.empty
+				|| (endX - startX == 1 && Math.abs(startY - endY) == 1 && chessPieces[endX][endY]
+						.toString().contains("black"))
+				|| (endX - startX == 1 && Math.abs(startY - endY) == 1
+						&& chessPieces[endX][endY] == ChessPiece.empty
 						&& EPLastMove && endY == pawnEPPosition && endX == 5);
 	}
 
 	/**
 	 * Methods to check the given move is valid.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -431,11 +527,13 @@ public class ChessBoard {
 	private boolean checkWhiteRook(int startX, int startY, int endX, int endY) {
 		// piece moves on same x or same y, and the path to the end point is
 		// clear, and the end point is either empty or has enemy piece
-		return ((startX == endX || startY == endY) && (checkPathWhiteRook(startX, startY, endX, endY)));
+		return ((startX == endX || startY == endY) && (checkPathWhiteRook(
+				startX, startY, endX, endY)));
 	}
 
 	/**
 	 * Helper method to check if the path to the end position is clear.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -444,13 +542,13 @@ public class ChessBoard {
 	 */
 	private boolean checkPathWhiteRook(int startX, int startY, int endX,
 			int endY) {
-		
+
 		String endPiece = chessPieces[endX][endY].toString();
-		
+
 		if (endPiece.contains("white")) {
 			return false;
 		}
-		
+
 		if (startX > endX) {
 			int temp = startX;
 			startX = endX;
@@ -461,8 +559,8 @@ public class ChessBoard {
 			startY = endY;
 			endY = temp;
 		}
-		
-		if(startX == endX) {
+
+		if (startX == endX) {
 			for (int i = startY + 1; i < endY - 1; i++) {
 				if (chessPieces[startX][i] != ChessPiece.empty) {
 					return false;
@@ -481,6 +579,7 @@ public class ChessBoard {
 
 	/**
 	 * Methods to check the given move is valid.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -495,6 +594,7 @@ public class ChessBoard {
 
 	/**
 	 * Methods to check the given move is valid.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -510,6 +610,7 @@ public class ChessBoard {
 
 	/**
 	 * Helper method to check if the path to the end position is clear.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -571,6 +672,7 @@ public class ChessBoard {
 
 	/**
 	 * Methods to check the given move is valid.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -592,6 +694,7 @@ public class ChessBoard {
 
 	/**
 	 * Methods to check the given move is valid.
+	 * 
 	 * @param startX
 	 * @param startY
 	 * @param endX
@@ -599,8 +702,32 @@ public class ChessBoard {
 	 * @return true if the move is valid
 	 */
 	private boolean checkWhiteKing(int startX, int startY, int endX, int endY) {
-		return Math.abs(startX - endX) <= 1 && Math.abs(startY - endY) <= 1 && !chessPieces[endX][endY]
-				.toString().contains("white") && (Math.abs(blackKingX - whiteKingX) > 1 || Math.abs(blackKingY - whiteKingY) > 1);
+		if (startX == 0 && startY == 4 && endX == 0 && endY == 2
+				&& whiteKingHasntMoved && leftWhiteRookHasntMoved) {
+			return castleLeftWhite();
+		}
+		if (startX == 0 && startY == 4 && endX == 0 && endY == 6
+				&& whiteKingHasntMoved && rightWhiteRookHasntMoved) {
+			return castleRightWhite();
+		}
+		return Math.abs(startX - endX) <= 1
+				&& Math.abs(startY - endY) <= 1
+				&& !chessPieces[endX][endY].toString().contains("white")
+				&& (Math.abs(blackKingX - whiteKingX) > 1 || Math
+						.abs(blackKingY - whiteKingY) > 1);
+	}
+
+	private boolean castleRightWhite() {
+		return chessPieces[0][5] == ChessPiece.empty
+				&& chessPieces[0][6] == ChessPiece.empty
+				&& !whiteInCheck(0, 5) && !whiteInCheck(0, 6);
+	}
+
+	private boolean castleLeftWhite() {
+		return chessPieces[0][3] == ChessPiece.empty
+				&& chessPieces[0][2] == ChessPiece.empty
+				&& chessPieces[0][1] == ChessPiece.empty
+				&& !whiteInCheck(0, 3) && !whiteInCheck(0, 2);
 	}
 
 	/**
@@ -719,6 +846,7 @@ public class ChessBoard {
 
 	/**
 	 * Helper method to find piece at given position on the chess board.
+	 * 
 	 * @param xPos
 	 * @param yPos
 	 * @return The chess piece at position xPos, yPos
@@ -730,13 +858,19 @@ public class ChessBoard {
 	/**
 	 * Helper method to determine if black King is in check
 	 * 
-	 * @return
+	 * @param xPos
+	 *            yPos the position to determine check. Pass in blackKingX and
+	 *            blackKingY unless another position is needed to be checked.
+	 * @return true if the black king is in check
 	 */
-	public boolean blackInCheck() {
-		// need to store the position of the kings seperately so they can be checked against.
+	public boolean blackInCheck(int xPos, int yPos) {
+		// need to store the position of the kings seperately so they can be
+		// checked against.
 		// this means updating the move method to keep the kings position
-		// go through every white piece on the board to see if it can take the black king next move
-		// dont forget the check piece methods dont actually move the pieces, so use them.
+		// go through every white piece on the board to see if it can take the
+		// black king next move
+		// dont forget the check piece methods dont actually move the pieces, so
+		// use them.
 
 		// if the white piece is a pawn, king must be x+1 and y+/-1
 		// rook, on the same line and a move to there would be valid
@@ -751,44 +885,38 @@ public class ChessBoard {
 				ChessPiece currentPiece = chessPieces[i][j];
 				switch (currentPiece) {
 				case whitequeen:
-					if (checkWhiteQueen(i, j, blackKingX, blackKingY)) {
+					if (checkWhiteQueen(i, j, xPos, yPos)) {
 						return true;
 					}
 					break;
 				case whitebishop:
-					if (checkWhiteBishop(i, j, blackKingX, blackKingY)) {
+					if (checkWhiteBishop(i, j, xPos, yPos)) {
 						return true;
 					}
 					break;
 				case whiteknight:
-					if (checkWhiteKnight(i, j, blackKingX, blackKingY)) {
+					if (checkWhiteKnight(i, j, xPos, yPos)) {
 						return true;
 					}
 					break;
 				case whiterook:
-					if (checkWhiteRook(i, j, blackKingX, blackKingY)) {
+					if (checkWhiteRook(i, j, xPos, yPos)) {
 						return true;
 					}
 					break;
 				case whitepawn:
 					if (j != 0 && j != 7) {
-						if (chessPieces[i + 1][j + 1]
-								.equals(ChessPiece.blackking)
-								|| chessPieces[i + 1][j - 1]
-										.equals(ChessPiece.blackking)) {
+						if ((i + 1 == xPos && j + 1 == yPos)
+								|| (i + 1 == xPos && j - 1 == yPos)) {
+							return true;
+						}
+					} else if (j == 0) {
+						if (i + 1 == xPos && j + 1 == yPos) {
 							return true;
 						}
 					} else {
-						if (j == 0) {
-							if (chessPieces[i + 1][j + 1]
-									.equals(ChessPiece.blackking)) {
-								return true;
-							}
-						} else {
-							if (chessPieces[i + 1][j - 1]
-									.equals(ChessPiece.blackking)) {
-								return true;
-							}
+						if (i + 1 == xPos && j - 1 == yPos) {
+							return true;
 						}
 					}
 					break;
@@ -805,7 +933,7 @@ public class ChessBoard {
 	 * 
 	 * @return
 	 */
-	public boolean whiteInCheck() {
+	public boolean whiteInCheck(int xPos, int yPos) {
 		// go through every black piece on the board to see if it can take the
 		// white king next move
 
@@ -822,44 +950,38 @@ public class ChessBoard {
 				ChessPiece currentPiece = chessPieces[i][j];
 				switch (currentPiece) {
 				case blackqueen:
-					if (checkBlackQueen(i, j, whiteKingX, whiteKingY)) {
+					if (checkBlackQueen(i, j, xPos, yPos)) {
 						return true;
 					}
 					break;
 				case blackbishop:
-					if (checkBlackBishop(i, j, whiteKingX, whiteKingY)) {
+					if (checkBlackBishop(i, j, xPos, yPos)) {
 						return true;
 					}
 					break;
 				case blackknight:
-					if (checkBlackKnight(i, j, whiteKingX, whiteKingY)) {
+					if (checkBlackKnight(i, j, xPos, yPos)) {
 						return true;
 					}
 					break;
 				case blackrook:
-					if (checkBlackRook(i, j, whiteKingX, whiteKingY)) {
+					if (checkBlackRook(i, j, xPos, yPos)) {
 						return true;
 					}
 					break;
 				case blackpawn:
 					if (j != 0 && j != 7) {
-						if (chessPieces[i - 1][j + 1]
-								.equals(ChessPiece.whiteking)
-								|| chessPieces[i - 1][j - 1]
-										.equals(ChessPiece.whiteking)) {
+						if ((i - 1 == xPos && j + 1 == yPos)
+								|| (i - 1 == xPos && j - 1 == yPos)) {
+							return true;
+						}
+					} else if (j == 0) {
+						if (i - 1 == xPos && j + 1 == yPos) {
 							return true;
 						}
 					} else {
-						if (j == 0) {
-							if (chessPieces[i - 1][j + 1]
-									.equals(ChessPiece.whiteking)) {
-								return true;
-							}
-						} else {
-							if (chessPieces[i - 1][j - 1]
-									.equals(ChessPiece.whiteking)) {
-								return true;
-							}
+						if (i - 1 == xPos && j - 1 == yPos) {
+							return true;
 						}
 					}
 					break;
@@ -870,16 +992,19 @@ public class ChessBoard {
 		}
 		return false;
 	}
-	
+
 	/**
-	 * Method to roll back a move.  Will return the chessboard class to its previous state.
+	 * Method to roll back a move. Will return the chessboard class to its
+	 * previous state. Can only be used to revert a completed move. Can only be
+	 * used to revert a single move, then another move must be made.
 	 */
 	public void revertMove() {
-		// Make copies of each class variable at the start of each move.  Use these copy variables to revert move here.
+		// Make copies of each class variable at the start of each move. Use
+		// these copy variables to revert move here.
 		chessPieces = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
 		for (int i = 0; i < BOARD_SIZE; i++) {
 			for (int j = 0; j < BOARD_SIZE; j++) {
-				chessPieces[i][j] =  prev_chessPieces[i][j];
+				chessPieces[i][j] = prev_chessPieces[i][j];
 			}
 		}
 		blackKingX = prev_blackKingX;
@@ -888,7 +1013,15 @@ public class ChessBoard {
 		whiteKingY = prev_whiteKingY;
 		pawnEPPosition = prev_pawnEPPosition;
 		EPLastMove = prev_EPLastMove;
+		whiteKingHasntMoved = prev_whiteKingHasntMoved;
+		leftWhiteRookHasntMoved = prev_leftWhiteRookHasntMoved;
+		rightWhiteRookHasntMoved = prev_rightWhiteRookHasntMoved;
+		blackKingHasntMoved = prev_blackKingHasntMoved;
+		leftBlackRookHasntMoved = prev_leftBlackRookHasntMoved;
+		rightBlackRookHasntMoved = prev_rightBlackRookHasntMoved;
 	}
 }
 
-enum ChessPiece { whiteking, whitequeen, whitebishop, whiteknight, whiterook, whitepawn, blackking, blackqueen, blackbishop, blackknight, blackrook, blackpawn, empty}
+enum ChessPiece {
+	whiteking, whitequeen, whitebishop, whiteknight, whiterook, whitepawn, blackking, blackqueen, blackbishop, blackknight, blackrook, blackpawn, empty
+}

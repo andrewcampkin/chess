@@ -84,10 +84,10 @@ public class ChessGame {
 	 * @param outputArea
 	 */
 	private void printInCheck(JTextArea outputArea) {
-		if (board.whiteInCheck()) {
+		if (board.whiteInCheck(board.whiteKingX, board.whiteKingY)) {
 			outputArea.append("White is in check!\n");
 		}
-		if (board.blackInCheck()) {
+		if (board.blackInCheck(board.blackKingX, board.blackKingY)) {
 			outputArea.append("Black is in check!\n");
 		}
 	}
@@ -113,9 +113,9 @@ public class ChessGame {
 	private boolean currentMoverInCheck() {
 		// get the current mover and call black check or white check method
 		if (turn == Turn.black) {
-			return board.blackInCheck();
+			return board.blackInCheck(board.blackKingX, board.blackKingY);
 		} else {
-			return board.whiteInCheck();
+			return board.whiteInCheck(board.whiteKingX, board.whiteKingY);
 		}
 	}
 
