@@ -1,22 +1,12 @@
 package hurricane.chess;
 
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Point;
-
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
-
-import javax.swing.JDialog;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
+import javax.swing.JApplet;
 import javax.swing.JTextArea;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.JLabel;
@@ -25,12 +15,9 @@ import javax.swing.BoxLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JScrollPane;
-// TODO the code that updates the screen state is inside the mouse listener method.
-// this is bad!
 
-public class ChessWindow {
-
-	private JFrame frmChess;
+public class ChessWindow extends JApplet{
+	
 	private ChessGame myGame;
 	private boolean firstClick;
 	private Point firstPoint, secondPoint;
@@ -40,137 +27,138 @@ public class ChessWindow {
 	/**
 	 * Launch the application.
 	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					ChessWindow window = new ChessWindow();
-					window.frmChess.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
+	public void init() {
+		try {
+			javax.swing.SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					//ChessWindow window = new ChessWindow();
+					myGame = new ChessGame();
+					initialize();
 				}
-			}
-		});
+			});
+		}catch (Exception e) {
+			e.printStackTrace();	
+		}
 	}
 
 	/**
 	 * Create the application.
 	 */
-	public ChessWindow() {
-		myGame = new ChessGame();
-		initialize();
-
-	}
+//	public ChessWindow() {
+//		
+//
+//	}
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		firstClick = false;
-		frmChess = new JFrame();
-		frmChess.setTitle("Chess Player");
-		frmChess.setBounds(100, 100, 800, 700);
-		frmChess.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		firstClick = false;
+//		frmChess = new JFrame();
+//		frmChess.setTitle("Chess Player");
+//		frmChess.setBounds(100, 100, 800, 700);
+//		frmChess.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		getContentPane().add(frmChess);
 
 		JPanel menu_panel = new JPanel();
 		menu_panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null,
 				null, null));
-		frmChess.getContentPane().add(menu_panel, BorderLayout.WEST);
+		getContentPane().add(menu_panel, BorderLayout.WEST);
 		menu_panel.setLayout(new BoxLayout(menu_panel, BoxLayout.Y_AXIS));
 
-		JMenuBar menuBar = new JMenuBar();
-		menu_panel.add(menuBar);
-
-		JMenu options_menu = new JMenu("Options");
-		menuBar.add(options_menu);
-		options_menu.setHorizontalAlignment(SwingConstants.LEFT);
-
-		//resets everything and starts a new game
-		JMenuItem newgame_menu = new JMenuItem("New game");
-		newgame_menu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				myGame = new ChessGame();
-				firstClick = false;
-				Image img = myGame.makeImage();
-				if (img != null) {
-					lblNewLabel.setIcon(new ImageIcon(img));
-				}
-			}
-		});
-		newgame_menu.setIcon(new ImageIcon(ChessWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/TreeLeaf.gif")));
-		options_menu.add(newgame_menu);
-
-		JMenuItem exit_menu = new JMenuItem("Exit");
-		exit_menu
-				.setIcon(new ImageIcon(
-						ChessWindow.class
-								.getResource("/javax/swing/plaf/metal/icons/ocean/collapsed-rtl.gif")));
-		exit_menu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				System.exit(0);
-			}
-		});
-
-		JMenuItem savegame_menu = new JMenuItem("Save game");
-		savegame_menu
-				.setIcon(new ImageIcon(
-						ChessWindow.class
-								.getResource("/com/sun/java/swing/plaf/windows/icons/FloppyDrive.gif")));
-		options_menu.add(savegame_menu);
-
-		JMenuItem loadgame_menu = new JMenuItem("Load saved game");
-		loadgame_menu
-				.setIcon(new ImageIcon(
-						ChessWindow.class
-								.getResource("/com/sun/java/swing/plaf/windows/icons/TreeOpen.gif")));
-		options_menu.add(loadgame_menu);
-		options_menu.add(exit_menu);
-
-		JMenu help_menu = new JMenu("Help");
-		help_menu.setHorizontalAlignment(SwingConstants.LEFT);
-		menuBar.add(help_menu);
-
-		JMenuItem about_menu = new JMenuItem("About chess player");
-		about_menu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				JDialog jd = new JDialog();
-				jd.setTitle("About chess player");
-				jd.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-				jd.setBounds(300, 300, 300, 100);
-				JTextArea jt = new JTextArea();
-				jt.setFont(new Font("Serif", Font.ITALIC, 14));
-				jt.setEditable(false);
-				jt.setText("Chess player by Hurricane.\nNot to be used for commercial purposes.\nhurricane666@gmail.com");
-				jd.getContentPane().add(jt);
-				jd.setVisible(true);
-			}
-		});
-		about_menu
-				.setIcon(new ImageIcon(
-						ChessWindow.class
-								.getResource("/com/sun/java/swing/plaf/windows/icons/Inform.gif")));
-		help_menu.add(about_menu);
-
-		JMenuItem howtoplay_menu = new JMenuItem("How to play chess");
-		howtoplay_menu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				JDialog jd = new JDialog();
-				jd.setTitle("How to play chess");
-				jd.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-				jd.setBounds(300, 300, 500, 150);
-				JTextArea jt = new JTextArea();
-				jt.setFont(new Font("Serif", Font.ITALIC, 14));
-				jt.setEditable(false);
-				jt.setText("Move pieces in turn starting with white.\nGame ends when the king is in check and cannot escape or in a draw.\nFor more information on the rules and strategy of chess\nsee http://en.wikipedia.org/wiki/Chess");
-				jd.getContentPane().add(jt);
-				jd.setVisible(true);
-			}
-		});
-		howtoplay_menu
-				.setIcon(new ImageIcon(
-						ChessWindow.class
-								.getResource("/javax/swing/plaf/metal/icons/ocean/question.png")));
-		help_menu.add(howtoplay_menu);
+//		JMenuBar menuBar = new JMenuBar();
+//		menu_panel.add(menuBar);
+//
+//		JMenu options_menu = new JMenu("Options");
+//		menuBar.add(options_menu);
+//		options_menu.setHorizontalAlignment(SwingConstants.LEFT);
+//
+//		//resets everything and starts a new game
+//		JMenuItem newgame_menu = new JMenuItem("New game");
+//		newgame_menu.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent arg0) {
+//				myGame = new ChessGame();
+//				firstClick = false;
+//				Image img = myGame.makeImage();
+//				if (img != null) {
+//					lblNewLabel.setIcon(new ImageIcon(img));
+//				}
+//			}
+//		});
+//		newgame_menu.setIcon(new ImageIcon(ChessWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/TreeLeaf.gif")));
+//		options_menu.add(newgame_menu);
+//
+//		JMenuItem exit_menu = new JMenuItem("Exit");
+//		exit_menu
+//				.setIcon(new ImageIcon(
+//						ChessWindow.class
+//								.getResource("/javax/swing/plaf/metal/icons/ocean/collapsed-rtl.gif")));
+//		exit_menu.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent arg0) {
+//				System.exit(0);
+//			}
+//		});
+//
+//		JMenuItem savegame_menu = new JMenuItem("Save game");
+//		savegame_menu
+//				.setIcon(new ImageIcon(
+//						ChessWindow.class
+//								.getResource("/com/sun/java/swing/plaf/windows/icons/FloppyDrive.gif")));
+//		options_menu.add(savegame_menu);
+//
+//		JMenuItem loadgame_menu = new JMenuItem("Load saved game");
+//		loadgame_menu
+//				.setIcon(new ImageIcon(
+//						ChessWindow.class
+//								.getResource("/com/sun/java/swing/plaf/windows/icons/TreeOpen.gif")));
+//		options_menu.add(loadgame_menu);
+//		options_menu.add(exit_menu);
+//
+//		JMenu help_menu = new JMenu("Help");
+//		help_menu.setHorizontalAlignment(SwingConstants.LEFT);
+//		menuBar.add(help_menu);
+//
+//		JMenuItem about_menu = new JMenuItem("About chess player");
+//		about_menu.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent arg0) {
+//				JDialog jd = new JDialog();
+//				jd.setTitle("About chess player");
+//				jd.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+//				jd.setBounds(300, 300, 300, 100);
+//				JTextArea jt = new JTextArea();
+//				jt.setFont(new Font("Serif", Font.ITALIC, 14));
+//				jt.setEditable(false);
+//				jt.setText("Chess player by Hurricane.\nNot to be used for commercial purposes.\nhurricane666@gmail.com");
+//				jd.getContentPane().add(jt);
+//				jd.setVisible(true);
+//			}
+//		});
+//		about_menu
+//				.setIcon(new ImageIcon(
+//						ChessWindow.class
+//								.getResource("/com/sun/java/swing/plaf/windows/icons/Inform.gif")));
+//		help_menu.add(about_menu);
+//
+//		JMenuItem howtoplay_menu = new JMenuItem("How to play chess");
+//		howtoplay_menu.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent arg0) {
+//				JDialog jd = new JDialog();
+//				jd.setTitle("How to play chess");
+//				jd.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+//				jd.setBounds(300, 300, 500, 150);
+//				JTextArea jt = new JTextArea();
+//				jt.setFont(new Font("Serif", Font.ITALIC, 14));
+//				jt.setEditable(false);
+//				jt.setText("Move pieces in turn starting with white.\nGame ends when the king is in check and cannot escape or in a draw.\nFor more information on the rules and strategy of chess\nsee http://en.wikipedia.org/wiki/Chess");
+//				jd.getContentPane().add(jt);
+//				jd.setVisible(true);
+//			}
+//		});
+//		howtoplay_menu
+//				.setIcon(new ImageIcon(
+//						ChessWindow.class
+//								.getResource("/javax/swing/plaf/metal/icons/ocean/question.png")));
+//		help_menu.add(howtoplay_menu);
 
 		JScrollPane scrollPane = new JScrollPane();
 		menu_panel.add(scrollPane);
@@ -186,7 +174,7 @@ public class ChessWindow {
 
 		chess_board.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null,
 				null, null));
-		frmChess.getContentPane().add(chess_board, BorderLayout.CENTER);
+		getContentPane().add(chess_board, BorderLayout.CENTER);
 
 		lblNewLabel = new JLabel("");
 		lblNewLabel.addMouseListener(new MouseAdapter() {

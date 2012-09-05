@@ -4,7 +4,6 @@ import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,18 +33,18 @@ public class ChessGame {
 	private void loadImages() {
 		images = new HashMap<String, BufferedImage>();
 		try {
-			images.put("blackbishop", ImageIO.read(new File("src/hurricane/chess/res/Bishop_Black-10.png")));
-			images.put("whitebishop", ImageIO.read(new File("src/hurricane/chess/res/Bishop_White-10.png")));
-			images.put("blackking", ImageIO.read(new File("src/hurricane/chess/res/King_Black-10.png")));
-			images.put("whiteking", ImageIO.read(new File("src/hurricane/chess/res/King_White-10.png")));
-			images.put("blackknight", ImageIO.read(new File("src/hurricane/chess/res/Knight_Black-10.png")));
-			images.put("whiteknight", ImageIO.read(new File("src/hurricane/chess/res/Knight_White-10.png")));
-			images.put("blackpawn", ImageIO.read(new File("src/hurricane/chess/res/Pawn_Black-10.png")));
-			images.put("whitepawn", ImageIO.read(new File("src/hurricane/chess/res/Pawn_White-10.png")));
-			images.put("blackqueen", ImageIO.read(new File("src/hurricane/chess/res/Queen_Black-10.png")));
-			images.put("whitequeen", ImageIO.read(new File("src/hurricane/chess/res/Queen_White-10.png")));
-			images.put("blackrook", ImageIO.read(new File("src/hurricane/chess/res/Rook_Black-10.png")));
-			images.put("whiterook", ImageIO.read(new File("src/hurricane/chess/res/Rook_White-10.png")));
+			images.put("blackbishop", ImageIO.read(getClass().getResource("/images/Bishop_Black-10.png")));
+			images.put("whitebishop", ImageIO.read(getClass().getResource("/images/Bishop_White-10.png")));
+			images.put("blackking", ImageIO.read(getClass().getResource("/images/King_Black-10.png")));
+			images.put("whiteking", ImageIO.read(getClass().getResource("/images/King_White-10.png")));
+			images.put("blackknight", ImageIO.read(getClass().getResource("/images/Knight_Black-10.png")));
+			images.put("whiteknight", ImageIO.read(getClass().getResource("/images/Knight_White-10.png")));
+			images.put("blackpawn", ImageIO.read(getClass().getResource("/images/Pawn_Black-10.png")));
+			images.put("whitepawn", ImageIO.read(getClass().getResource("/images/Pawn_White-10.png")));
+			images.put("blackqueen", ImageIO.read(getClass().getResource("/images/Queen_Black-10.png")));
+			images.put("whitequeen", ImageIO.read(getClass().getResource("/images/Queen_White-10.png")));
+			images.put("blackrook", ImageIO.read(getClass().getResource("/images/Rook_Black-10.png")));
+			images.put("whiterook", ImageIO.read(getClass().getResource("/images/Rook_White-10.png")));
 		} catch (IOException e) {
 			System.err.print("Image files could not be loaded\n");
 		}
@@ -121,9 +120,10 @@ public class ChessGame {
 
 	public BufferedImage makeImage() {
 		try {
-			chessBoardImage = ImageIO.read(new File("src/hurricane/chess/res/chessboard.png"));
+			chessBoardImage = ImageIO.read(getClass().getResource("/images/chessboard.png"));
 		} catch (IOException e) {
 			System.err.print("Image files could not be loaded\n");
+			return null;
 		}
 		Graphics2D g = chessBoardImage.createGraphics();
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
