@@ -11,7 +11,6 @@ package hurricane.chess;
  */
 public class ChessBoard {
 	private ChessPiece[][] chessPieces;
-	private static final int BOARD_SIZE = 8;
 	public int blackKingX;
 	public int blackKingY;
 	public int whiteKingX;
@@ -46,7 +45,7 @@ public class ChessBoard {
 	public ChessBoard() {
 		// initialise the board with standard setup for the start of a chess
 		// game
-		chessPieces = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
+		chessPieces = new ChessPiece[8][8];
 		pawnEPPosition = -1;
 		EPLastMove = false;
 		whiteKingHasntMoved = true;
@@ -240,9 +239,9 @@ public class ChessBoard {
 	 * moves to be reverted.
 	 */
 	private void copyVariables() {
-		prev_chessPieces = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
-		for (int i = 0; i < BOARD_SIZE; i++) {
-			for (int j = 0; j < BOARD_SIZE; j++) {
+		prev_chessPieces = new ChessPiece[8][8];
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
 				prev_chessPieces[i][j] = chessPieces[i][j];
 			}
 		}
@@ -736,11 +735,11 @@ public class ChessBoard {
 	 */
 	private void initialisePieces() {
 		if (chessPieces == null) {
-			chessPieces = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
+			chessPieces = new ChessPiece[8][8];
 		}
 		// hard coded starting positions
 		for (int i = 2; i < 6; i++) {
-			for (int j = 0; j < BOARD_SIZE; j++) {
+			for (int j = 0; j < 8; j++) {
 				chessPieces[i][j] = ChessPiece.empty;
 			}
 		}
@@ -791,9 +790,9 @@ public class ChessBoard {
 	public void printBoard() {
 		System.out.println("  " + 0 + "  " + 1 + "  " + 2 + "  " + 3 + "  " + 4
 				+ "  " + 5 + "  " + 6 + "  " + 7);
-		for (int i = BOARD_SIZE - 1; i >= 0; i--) {
+		for (int i = 8 - 1; i >= 0; i--) {
 			System.out.print(i + " ");
-			for (int j = 0; j < BOARD_SIZE; j++) {
+			for (int j = 0; j < 8; j++) {
 				ChessPiece currentPiece = chessPieces[i][j];
 
 				switch (currentPiece) {
@@ -880,8 +879,8 @@ public class ChessBoard {
 		// queen, check as if rook and bishop
 		// king, nothing. king move method should stop the kings from getting
 		// within a square of each other
-		for (int i = 0; i < BOARD_SIZE; i++) {
-			for (int j = 0; j < BOARD_SIZE; j++) {
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
 				ChessPiece currentPiece = chessPieces[i][j];
 				switch (currentPiece) {
 				case whitequeen:
@@ -945,8 +944,8 @@ public class ChessBoard {
 		// queen, check as if rook and bishop
 		// king, nothing. king move method should stop the kings from getting
 		// within a sq
-		for (int i = 0; i < BOARD_SIZE; i++) {
-			for (int j = 0; j < BOARD_SIZE; j++) {
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
 				ChessPiece currentPiece = chessPieces[i][j];
 				switch (currentPiece) {
 				case blackqueen:
@@ -1001,9 +1000,9 @@ public class ChessBoard {
 	public void revertMove() {
 		// Make copies of each class variable at the start of each move. Use
 		// these copy variables to revert move here.
-		chessPieces = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
-		for (int i = 0; i < BOARD_SIZE; i++) {
-			for (int j = 0; j < BOARD_SIZE; j++) {
+		chessPieces = new ChessPiece[8][8];
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
 				chessPieces[i][j] = prev_chessPieces[i][j];
 			}
 		}

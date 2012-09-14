@@ -1,0 +1,55 @@
+<!-- //html page to test testchess.js -->
+<!-- TODO, put in turns and stuff next.  also figure out displaying the board graphically and capturing mouse events on the canvas -->
+<!DOCTYPE html>
+<html>
+    <head>
+	<script src="testchess.js"></script>
+	<!-- script src="chess.js"></script -->
+    </head>
+    <body>
+	<p>Move a piece</p>
+	<form name="chessForm">
+	    X Start: <input type="text" name="xStart" /><br />
+	    Y Start: <input type="text" name="yStart" /><br />
+            X End: <input type="text" name="xEnd" /><br />
+	    Y End: <input type="text" name="yEnd" /><br />
+            <input type="hidden" name="chessString" />
+	    <input type="submit" value="Submit" />
+	</form>
+	<canvas id="chessCanvas"></canvas>
+	<script type="text/javascript">
+            //draw the chess game screen here
+	    var canvas=document.getElementById('chessCanvas');
+	    var ctx=canvas.getContext('2d');
+	    ctx.fillStyle='#FF0000';
+	    ctx.fillRect(0,0,80,100);
+	</script>
+	<script type="text/javascript">
+            function getFieldValue (strFieldName)
+            {
+                var strFieldValue;
+                var objRegExp = new RegExp(strFieldName + "=([^&]+)","gi");
+                if (objRegExp.test(location.search))
+                    strFieldValue = unescape(RegExp.$1);
+                else strFieldValue="";
+            return strFieldValue;
+            }
+        </script>
+        <script type="text/javascript">
+            //this runs after the submit button gets hit, ie on page load.
+            //pass the input values to the chess game code here somehow
+            var chessState = getFieldValue("chessString");
+            var testchess = new ChessBoard(chessState);
+            var xStart = getFieldValue("xStart");
+            var yStart = getFieldValue("yStart");
+            var xEnd = getFieldValue("xEnd");
+            var yEnd = getFieldValue("yEnd");
+            //console.log("(" + xStart + ", " + yStart + "), (" + xEnd + ", " + yEnd + ")");
+            var result = testchess.move(xStart, yStart, xEnd, yEnd);
+            //console.log(result);
+            document.chessForm.chessString.value = testchess.boardState;
+            //console.log(testchess.boardState);
+            testchess.printBoard();
+        </script>
+    </body>
+</html>

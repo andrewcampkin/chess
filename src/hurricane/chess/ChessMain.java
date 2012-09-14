@@ -8,7 +8,6 @@ public class ChessMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		ChessWindow theWindow = new ChessWindow();
 		theWindow.init();
 		theWindow.start();
