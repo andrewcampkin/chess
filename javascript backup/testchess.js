@@ -8,6 +8,10 @@ function ChessBoard(boardState){
     var ChessPiece = {
         "whiteking":1, "whitequeen":2, "whitebishop":3, "whiteknight":4, "whiterook":5, "whitepawn":6, "blackking":7, "blackqueen":8, "blackbishop":9, "blackknight":10, "blackrook":11, "blackpawn":12, "empty":13
     }
+    var Turn = {
+        "white":1, "black":2
+    }
+    var turn;
     var blackKingX;
     var blackKingY;
     var whiteKingX;
@@ -33,7 +37,8 @@ function ChessBoard(boardState){
     var prev_leftBlackRookHasntMoved;
     var prev_rightBlackRookHasntMoved;
     
-    pawnEPPosition = -1;
+    turn = Turn.white;
+    pawnEPPosition = 8;
     EPLastMove = false;
     whiteKingHasntMoved = true;
     leftWhiteRookHasntMoved = true;
@@ -47,55 +52,68 @@ function ChessBoard(boardState){
     for(var i = 0; i < 8; i++){
         chessPieces[i] = new Array(8);
         for (var j = 0; j < 8; j++) {
-            chessPieces[i][j] = ChessPiece.empty;
         }
     }
-    chessPieces[0][0] = ChessPiece.whiterook;
-    chessPieces[0][1] = ChessPiece.whiteknight;
-    chessPieces[0][2] = ChessPiece.whitebishop;
-    chessPieces[0][3] = ChessPiece.whitequeen;
-    chessPieces[0][4] = ChessPiece.whiteking;
-    chessPieces[0][5] = ChessPiece.whitebishop;
-    chessPieces[0][6] = ChessPiece.whiteknight;
-    chessPieces[0][7] = ChessPiece.whiterook;
 
-    chessPieces[1][0] = ChessPiece.whitepawn;
-    chessPieces[1][1] = ChessPiece.whitepawn;
-    chessPieces[1][2] = ChessPiece.whitepawn;
-    chessPieces[1][3] = ChessPiece.whitepawn;
-    chessPieces[1][4] = ChessPiece.whitepawn;
-    chessPieces[1][5] = ChessPiece.whitepawn;
-    chessPieces[1][6] = ChessPiece.whitepawn;
-    chessPieces[1][7] = ChessPiece.whitepawn;
-
-    chessPieces[7][0] = ChessPiece.blackrook;
-    chessPieces[7][1] = ChessPiece.blackknight;
-    chessPieces[7][2] = ChessPiece.blackbishop;
-    chessPieces[7][3] = ChessPiece.blackqueen;
-    chessPieces[7][4] = ChessPiece.blackking;
-    chessPieces[7][5] = ChessPiece.blackbishop;
-    chessPieces[7][6] = ChessPiece.blackknight;
-    chessPieces[7][7] = ChessPiece.blackrook;
-
-    chessPieces[6][0] = ChessPiece.blackpawn;
-    chessPieces[6][1] = ChessPiece.blackpawn;
-    chessPieces[6][2] = ChessPiece.blackpawn;
-    chessPieces[6][3] = ChessPiece.blackpawn;
-    chessPieces[6][4] = ChessPiece.blackpawn;
-    chessPieces[6][5] = ChessPiece.blackpawn;
-    chessPieces[6][6] = ChessPiece.blackpawn;
-    chessPieces[6][7] = ChessPiece.blackpawn;
-    blackKingX = 7;
-    blackKingY = 4;
-    whiteKingX = 0;
-    whiteKingY = 4;
-    if(this.boardState != null && this.boardState.length == 64) {
-        this.setBoardState(this.boardState, chessPieces, ChessPiece);
+    if(this.boardState != null && this.boardState.length == 73) {
+        setBoardState();
     } else {
-        this.boardState = this.initialiseBoardState();
+        this.boardState = initialiseBoardState();
+        console.log(boardState);
+        setBoardState();
     }
 //end of code that runs as part of constructor?
 //rest is function declarations
+//movehandler is called by the ui, and deals with which colour has the turn, and if the king is in check at the end of the move.  move is called from in here.  the ui must handle turning screen co-ords into game co-ords and pass this function 0-7, 0-7 with x being up and y being across.
+this.movehandler = function(startX, startY, endX, endY) {
+    if(startX == '' || startY == '' || endX == '' || endY == '') {
+        return false;
+    }
+    var piece = chessPieces[startX][startY].toString();
+    var turnValid = false;
+    if(turn == Turn.white) {
+        if(Number(piece)<7) {
+            turnValid = true;
+        }
+    }else {
+        if(Number(piece) > 6) {
+            turnValid = true;
+        }
+    }
+    console.log(piece);
+    if(turnValid && this.move(startX, startY, endX, endY)) {
+        if(this.currentMoverInCheck()){
+            revertMove();
+            console.log("invalid move because king is in check at end of turn");
+            console.log("turn: " + turn.toString());
+            return false;
+        }
+        this.toggleTurn();
+        console.log("successful move");
+        console.log("turn: " + turn.toString());
+        return true;
+    } else {
+        console.log("invalid move because that move is not allowed");
+        console.log("turn: " + turn.toString());
+        return false;
+    }
+}
+
+this.currentMoverInCheck = function(){
+    if (turn == Turn.black) {
+	return this.blackInCheck(blackKingX, blackKingY);
+    } else {
+	return this.whiteInCheck(whiteKingX, whiteKingY);
+    }   
+}
+
+this.toggleTurn = function() {
+    if (turn == Turn.black) {
+	turn = Turn.white;
+    } else {
+	turn = Turn.black;
+    }     
+}
 this.move = function(startX, startY, endX, endY){
     if (startX < 0 || startX > 7 || startY < 0 || startY > 7 || endX < 0 || endX > 7 || endY < 0 || endY > 7) {
         return false;
@@ -165,7 +183,7 @@ this.move = function(startX, startY, endX, endY){
         if (endX - startX == 1 && Math.abs(startY - endY) == 1 && chessPieces[endX][endY] == ChessPiece.empty && EPLastMove && endY == pawnEPPosition && endX == 5) {
             chessPieces[endX - 1][endY] = ChessPiece.empty;
         }
-        pawnEPPosition = -1;
+        pawnEPPosition = 8;
         EPLastMove = false;
         if (startX == 1 && endX == 3) {
             pawnEPPosition = startY;
@@ -223,7 +241,7 @@ this.move = function(startX, startY, endX, endY){
         if (startX - endX == 1 && Math.abs(startY - endY) == 1 && chessPieces[endX][endY] == ChessPiece.empty && EPLastMove && endY == pawnEPPosition && endX == 2) {
             chessPieces[endX + 1][endY] = ChessPiece.empty;
         }
-        pawnEPPosition = -1;
+        pawnEPPosition = 8;
         EPLastMove = false;
         if (startX == 6 && endX == 4) {
             pawnEPPosition = startY;
@@ -235,7 +253,7 @@ this.move = function(startX, startY, endX, endY){
     }
     chessPieces[endX][endY] = chessPieces[startX][startY];
     chessPieces[startX][startY] = ChessPiece.empty;
-    this.boardState = this.saveBoardState(chessPieces, ChessPiece);
+    this.boardState = this.saveBoardState(chessPieces, ChessPiece, pawnEPPosition, EPLastMove, whiteKingHasntMoved, leftWhiteRookHasntMoved, rightWhiteRookHasntMoved, blackKingHasntMoved, leftBlackRookHasntMoved, rightBlackRookHasntMoved, turn, Turn);
     return true;
 }
 
@@ -262,7 +280,7 @@ ChessBoard.prototype.copyVariables = function(){
 }
 
 ChessBoard.prototype.checkBlackPawn = function(startX, startY, endX, endY) {
-    return (startX - endX == 1 && startY == endY && chessPieces[endX][endY] == ChessPiece.empty || (startX == 6 && endX == 4 && startY == endY && chessPieces[endX][endY] == ChessPiece.empty && chessPieces[endX + 1][endY] == ChessPiece.empty) || (startX - endX == 1 && Math.abs(startY - endY) == 1 && chessPieces[endX][endY] == "white")) || (startX - endX == 1 && Math.abs(startY - endY) == 1 && chessPieces[endX][endY] == ChessPiece.empty && EPLastMove == true && endY == pawnEPPosition && endX == 2);
+    return (startX - endX == 1 && startY == endY && chessPieces[endX][endY] == ChessPiece.empty) || (startX == 6 && endX == 4 && startY == endY && chessPieces[endX][endY] == ChessPiece.empty && chessPieces[Number(endX) + 1][endY] == ChessPiece.empty) || (startX - endX == 1 && Math.abs(startY - endY) == 1 && chessPieces[endX][endY].toString().indexOf("white") != -1) || (startX - endX == 1 && Math.abs(startY - endY) == 1 && chessPieces[endX][endY] == ChessPiece.empty && EPLastMove == true && endY == pawnEPPosition && endX == 2);
 }
 
 ChessBoard.prototype.checkBlackRook = function(startX, startY, endX, endY) {
@@ -271,7 +289,7 @@ ChessBoard.prototype.checkBlackRook = function(startX, startY, endX, endY) {
 
 ChessBoard.prototype.checkPathBlackRook = function(startX, startY, endX, endY) {
     var endPiece = chessPieces[endX][endY].toString();
-    if (endPiece.contains("black")) {
+    if (endPiece.indexOf("black") != -1) {
         return false;
     }
     if (startX > endX) {
@@ -301,7 +319,7 @@ ChessBoard.prototype.checkPathBlackRook = function(startX, startY, endX, endY) {
 }
 
 ChessBoard.prototype.checkBlackKnight = function(startX, startY, endX, endY) {
-    return (((Math.abs(startX - endX) == 2 && Math.abs(startY - endY) == 1) || (Math.abs(startX - endX) == 1 && Math.abs(startY - endY) == 2)) && !chessPiece[endX][endY] == "black");
+    return (((Math.abs(startX - endX) == 2 && Math.abs(startY - endY) == 1) || (Math.abs(startX - endX) == 1 && Math.abs(startY - endY) == 2)) && chessPiece[endX][endY].toString().indexOf("black") == -1);
 }
 
 ChessBoard.prototype.checkBlackBishop = function(startX, startY, endX, endY) {
@@ -310,7 +328,7 @@ ChessBoard.prototype.checkBlackBishop = function(startX, startY, endX, endY) {
 
 ChessBoard.prototype.checkPathBlackBishop = function(startX, startY, endX, endY) {
     var endPiece = chessPieces[endX][endY].toString();
-    if (endPiece.contains("black")) {
+    if (endPiece.indexOf("black") != -1) {
 	return false;
     }
     if ((startX < endX && startY < endY) || (startX > endX && startY > endY)) {
@@ -382,7 +400,7 @@ ChessBoard.prototype.castleLeftBlack = function() {
 }
 
 ChessBoard.prototype.checkWhitePawn = function(startX, startY, endX, endY) {
-    return (endX - startX == 1 && startY == endY && chessPieces[endX][endY] == ChessPiece.empty) || (startX == 1 && endX == 3 && startY == endY && chessPieces[endX][endY] == ChessPiece.empty && chessPieces[endX - 1][endY] == ChessPiece.empty) || (endX - startX == 1 && Math.abs(startY - endY) == 1 && chessPieces[endX][endY] == "black") || (endX - startX == 1 && Math.abs(startY - endY) == 1 && chessPieces[endX][endY] == ChessPiece.empty && EPLastMove && endY == pawnEPPosition && endX == 5);
+    return (endX - startX == 1 && startY == endY && chessPieces[endX][endY] == ChessPiece.empty) || (startX == 1 && endX == 3 && startY == endY && chessPieces[endX][endY] == ChessPiece.empty && chessPieces[endX - 1][endY] == ChessPiece.empty) || (endX - startX == 1 && Math.abs(startY - endY) == 1 && chessPieces[endX][endY].toString().indexOf("black") != -1) || (endX - startX == 1 && Math.abs(startY - endY) == 1 && chessPieces[endX][endY] == ChessPiece.empty && EPLastMove && endY == pawnEPPosition && endX == 5);
 }
 
 ChessBoard.prototype.checkWhiteRook = function(startX, startY, endX, endY) {
@@ -391,7 +409,7 @@ ChessBoard.prototype.checkWhiteRook = function(startX, startY, endX, endY) {
 
 ChessBoard.prototype.checkPathWhiteRook = function(startX, startY, endX, endY) {
     var endPiece = chessPieces[endX][endY].toString();
-    if (endPiece.contains("white")) {
+    if (endPiece.indexOf("white") != -1) {
 	return false;
     }
     if (startX > endX) {
@@ -430,7 +448,7 @@ ChessBoard.prototype.checkWhiteBishop = function(startX, startY, endX, endY) {
 
 ChessBoard.prototype.checkPathWhiteBishop = function(startX, startY, endX, endY) {
     var endPiece = chessPieces[endX][endY].toString();
-    if (endPiece.contains("white")) {
+    if (endPiece.indexOf("white") != -1) {
 	return false;
     }
     if ((startX < endX && startY < endY) || (startX > endX && startY > endY)) {
@@ -502,6 +520,7 @@ ChessBoard.prototype.castleLeftWhite = function() {
 }
 
 ChessBoard.prototype.getPiece = function(xPos, yPos) {
+    console.log(chessPieces[xPos][yPos]);
     return chessPieces[xPos][yPos];
 }
 
@@ -680,12 +699,13 @@ ChessBoard.prototype.printBoard = function() {
     r+=("  " + 0 + "  " + 1 + "  " + 2 + "  " + 3 + "  " + 4 + "  " + 5 + "  " + 6 + "  " + 7);
     console.log(r);
 }
-}//end of chess "class"
+
 
 //String will have characters with no seperation. upper case for black lower for white
 //K king, Q queen, B bishop, N knight, R rook, P pawn
 //use method charAt() on the string
-ChessBoard.prototype.setBoardState = function(boardState, chessPieces, ChessPiece){
+function setBoardState() {
+    console.log(boardState);
     for(var i = 0; i < 8; i++){
         for (var j = 0; j < 8; j++) {
             var nextPos = i * 8 + j;
@@ -694,6 +714,8 @@ ChessBoard.prototype.setBoardState = function(boardState, chessPieces, ChessPiec
             {
                 case 'K':
                     chessPieces[i][j] = ChessPiece.blackking;
+                    blackKingX = i;
+                    blackKingY = j;
                     break;
                 case 'Q':
                     chessPieces[i][j] = ChessPiece.blackqueen;
@@ -712,6 +734,8 @@ ChessBoard.prototype.setBoardState = function(boardState, chessPieces, ChessPiec
                     break;
                 case 'k':
                     chessPieces[i][j] = ChessPiece.whiteking;
+                    whiteKingX = i;
+                    whiteKingY = j;
                     break;
                 case 'q':
                     chessPieces[i][j] = ChessPiece.whitequeen;
@@ -737,10 +761,53 @@ ChessBoard.prototype.setBoardState = function(boardState, chessPieces, ChessPiec
             }
         }
     }
+    pawnEPPosition = Number(boardState.charAt(64));
+    if(boardState.charAt(65) == 't') {
+        EPLastMove = true;
+    } else {
+        EPLastMove = false;
+    }
+    if(boardState.charAt(66) == 't') {
+        whiteKingHasntMoved = true;
+    } else {
+        whiteKingHasntMoved = false;
+    }
+    if(boardState.charAt(67) == 't') {
+        leftWhiteRookHasntMoved = true;
+    } else {
+        leftWhiteRookHasntMoved = false;
+    }
+    if(boardState.charAt(68) == 't') {
+        rightWhiteRookHasntMoved = true;
+    } else {
+        rightWhiteRookHasntMoved = false;
+    }
+    if(boardState.charAt(69) == 't') {
+        blackKingHasntMoved = true;
+    } else {
+        blackKingHasntMoved = false;
+    }
+    if(boardState.charAt(70) == 't') {
+        leftBlackRookHasntMoved = true;
+    } else {
+        leftBlackRookHasntMoved = false;
+    }
+    if(boardState.charAt(71) == 't') {
+        rightBlackRookHasntMoved = true;
+    } else {
+        rightBlackRookHasntMoved = false;
+    }
+    if(boardState.charAt(72) == 'w') {
+        turn = Turn.white;
+    } else {
+        turn = Turn.black;
+    }
+    //boardstate string must also contain the other variables like EP and stuff
+    //64 chars give the board state so char 64 = pawnEPPosition (an int), 65 = eplastmove (bool), 66 = whitekinghasntmoved, 67 = leftwhiterookhasntmoved, 68 = rightwhiterookhasntmoved, 69 = blackkinghasntmoved, 70 = lbr, 71 = rbr all bool
     //console.log(boardState);
 }
 
-ChessBoard.prototype.saveBoardState = function(chessPieces, ChessPiece){
+function saveBoardState(){
     var boardState = "";
     for(var i = 0; i < 8; i++){
         for (var j = 0; j < 8; j++) {
@@ -792,13 +859,128 @@ ChessBoard.prototype.saveBoardState = function(chessPieces, ChessPiece){
             }
         }
     }
-    //console.log(boardState);
+    console.log(pawnEPPosition);
+    boardState = boardState + pawnEPPosition;
+    if(EPLastMove) {
+        boardState = boardState + 't';
+    } else {
+        boardState = boardState + 'f';
+    }
+    if(whiteKingHasntMoved) {
+        boardState = boardState + 't';
+    } else {
+        boardState = boardState + 'f';
+    }
+    if(leftWhiteRookHasntMoved) {
+        boardState = boardState + 't';
+    } else {
+        boardState = boardState + 'f';
+    }
+    if(rightWhiteRookHasntMoved) {
+        boardState = boardState + 't';
+    } else {
+        boardState = boardState + 'f';
+    }
+    if(blackKingHasntMoved) {
+        boardState = boardState + 't';
+    } else {
+        boardState = boardState + 'f';
+    }
+    if(leftBlackRookHasntMoved) {
+        boardState = boardState + 't';
+    } else {
+        boardState = boardState + 'f';
+    }
+    if(rightBlackRookHasntMoved) {
+        boardState = boardState + 't';
+    } else {
+        boardState = boardState + 'f';
+    }
+    if(turn == Turn.white) {
+        boardState = boardState + 'w';
+    } else {
+        boardState = boardState + 'b';
+    }
+    console.log(boardState);
     return boardState;
 }
 
-ChessBoard.prototype.initialiseBoardState = function(){
+function initialiseBoardState(){
     var newBoardState;
-    newBoardState = "rnbqkbkrppppppppeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeePPPPPPPPRNBQKBNR";
+    newBoardState = "rnbqkbkrppppppppeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeePPPPPPPPRNBQKBNR0fttttttw";
     return newBoardState;
 }
 
+//ctx is the 2d graphics context of the canvas
+ChessBoard.prototype.drawBoard = function(ctx) {
+    var imgArray = new Array(13);
+    var img = new Image();
+    img.src = "chessBoardImage.png";
+    imgArray[0] = img;
+    var blackPawn = new Image();
+    blackPawn.src = "Pawn_Black-10.png";
+    imgArray[1] = blackPawn;
+    var blackRook = new Image();
+    blackRook.src = "Rook_Black-10.png";
+    imgArray[2] = blackRook;
+    var blackKnight = new Image();
+    blackKnight.src = "Knight_Black-10.png";
+    imgArray[3] = blackKnight;
+    var blackBishop = new Image();
+    blackBishop.src = "Bishop_Black-10.png";
+    imgArray[4] = blackBishop;
+    var blackQueen = new Image();
+    blackQueen.src = "Queen_Black-10.png";
+    imgArray[5] = blackQueen;
+    var blackKing = new Image();
+    blackKing.src = "King_Black-10.png";
+    imgArray[6] = blackKing;
+    var whitePawn = new Image();
+    whitePawn.src = "Pawn_White-10.png";
+    imgArray[7] = whitePawn;
+    var whiteRook = new Image();
+    whiteRook.src = "Rook_White-10.png";
+    imgArray[8] = whiteRook;
+    var whiteKnight = new Image();
+    whiteKnight.src = "Knight_White-10.png";
+    imgArray[9] = whiteKnight;
+    var whiteBishop = new Image();
+    whiteBishop.src = "Bishop_White-10.png";
+    imgArray[10] = whiteBishop;
+    var whiteQueen = new Image();
+    whiteQueen.src = "Queen_White-10.png";
+    imgArray[11] = whiteQueen;
+    var whiteKing = new Image();
+    whiteKing.src = "King_White-10.png";
+    imgArray[12] = whiteKing;
+
+    //draw the chessboard
+    //ctx.fillRect(20,20,150,100);
+    console.log(chessPieces);
+    ctx.drawImage(imgArray[0], 0, 0);
+    
+    var startValue = 20;
+    var increment = 75;
+    var pieceX = 7;
+    var pieceY = 0;
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            if (pieceX < 0) {
+                pieceX = 7;
+            }
+            if (pieceY > 7) {
+                pieceY = 0;
+            }
+            var nextPiece = chessPieces[pieceX][pieceY];
+            console.log(nextPiece);
+            if (nextPiece == 13) {
+                pieceX--;
+                continue;
+            }
+            ctx.drawImage(imgArray[1], startValue + i * increment, startValue + j * increment);
+            pieceX--;
+        }
+        pieceY++;
+    }
+}
+}//end of chess "class"

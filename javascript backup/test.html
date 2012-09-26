@@ -16,14 +16,14 @@
             <input type="hidden" name="chessString" />
 	    <input type="submit" value="Submit" />
 	</form>
-	<canvas id="chessCanvas"></canvas>
-	<script type="text/javascript">
+	<canvas id="chessCanvas" width="800" height="800"></canvas>
+	<!-- script type="text/javascript">
             //draw the chess game screen here
 	    var canvas=document.getElementById('chessCanvas');
 	    var ctx=canvas.getContext('2d');
 	    ctx.fillStyle='#FF0000';
 	    ctx.fillRect(0,0,80,100);
-	</script>
+	</script -->
 	<script type="text/javascript">
             function getFieldValue (strFieldName)
             {
@@ -45,11 +45,14 @@
             var xEnd = getFieldValue("xEnd");
             var yEnd = getFieldValue("yEnd");
             //console.log("(" + xStart + ", " + yStart + "), (" + xEnd + ", " + yEnd + ")");
-            var result = testchess.move(xStart, yStart, xEnd, yEnd);
+            var result = testchess.movehandler(xStart, yStart, xEnd, yEnd);
             //console.log(result);
             document.chessForm.chessString.value = testchess.boardState;
             //console.log(testchess.boardState);
             testchess.printBoard();
+            var canvas = document.getElementById('chessCanvas');
+            var ctx = canvas.getContext('2d');
+            testchess.drawBoard(ctx);
         </script>
     </body>
 </html>
