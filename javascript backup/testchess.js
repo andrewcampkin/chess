@@ -55,13 +55,13 @@ function ChessBoard(boardState){
         }
     }
 
-    if(this.boardState != null && this.boardState.length == 73) {
-        setBoardState();
-    } else {
-        this.boardState = initialiseBoardState();
-        console.log(boardState);
-        setBoardState();
+    if(boardState == null || boardState.length != 73) {
+        //this is a new game
+        boardState = initialiseBoardState();
     }
+    //console.log(boardState);
+    chessPieces = setBoardState(this.boardState);
+    //console.log(chessPieces);
 //end of code that runs as part of constructor?
 //rest is function declarations
 //movehandler is called by the ui, and deals with which colour has the turn, and if the king is in check at the end of the move.  move is called from in here.  the ui must handle turning screen co-ords into game co-ords and pass this function 0-7, 0-7 with x being up and y being across.
@@ -253,7 +253,7 @@ this.move = function(startX, startY, endX, endY){
     }
     chessPieces[endX][endY] = chessPieces[startX][startY];
     chessPieces[startX][startY] = ChessPiece.empty;
-    this.boardState = this.saveBoardState(chessPieces, ChessPiece, pawnEPPosition, EPLastMove, whiteKingHasntMoved, leftWhiteRookHasntMoved, rightWhiteRookHasntMoved, blackKingHasntMoved, leftBlackRookHasntMoved, rightBlackRookHasntMoved, turn, Turn);
+    this.boardState = saveBoardState(chessPieces, ChessPiece, pawnEPPosition, EPLastMove, whiteKingHasntMoved, leftWhiteRookHasntMoved, rightWhiteRookHasntMoved, blackKingHasntMoved, leftBlackRookHasntMoved, rightBlackRookHasntMoved, turn, Turn);
     return true;
 }
 
@@ -704,7 +704,7 @@ ChessBoard.prototype.printBoard = function() {
 //String will have characters with no seperation. upper case for black lower for white
 //K king, Q queen, B bishop, N knight, R rook, P pawn
 //use method charAt() on the string
-function setBoardState() {
+function setBoardState(boardstate) {
     console.log(boardState);
     for(var i = 0; i < 8; i++){
         for (var j = 0; j < 8; j++) {
@@ -805,6 +805,7 @@ function setBoardState() {
     //boardstate string must also contain the other variables like EP and stuff
     //64 chars give the board state so char 64 = pawnEPPosition (an int), 65 = eplastmove (bool), 66 = whitekinghasntmoved, 67 = leftwhiterookhasntmoved, 68 = rightwhiterookhasntmoved, 69 = blackkinghasntmoved, 70 = lbr, 71 = rbr all bool
     //console.log(boardState);
+    return chessPieces;
 }
 
 function saveBoardState(){
@@ -907,80 +908,46 @@ function saveBoardState(){
 
 function initialiseBoardState(){
     var newBoardState;
-    newBoardState = "rnbqkbkrppppppppeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeePPPPPPPPRNBQKBNR0fttttttw";
+    newBoardState = "rnbqkbnrppppppppeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeePPPPPPPPRNBQKBNR0fttttttw";
     return newBoardState;
 }
 
-//ctx is the 2d graphics context of the canvas
-ChessBoard.prototype.drawBoard = function(ctx) {
-    var imgArray = new Array(13);
-    var img = new Image();
-    img.src = "chessBoardImage.png";
-    imgArray[0] = img;
-    var blackPawn = new Image();
-    blackPawn.src = "Pawn_Black-10.png";
-    imgArray[1] = blackPawn;
-    var blackRook = new Image();
-    blackRook.src = "Rook_Black-10.png";
-    imgArray[2] = blackRook;
-    var blackKnight = new Image();
-    blackKnight.src = "Knight_Black-10.png";
-    imgArray[3] = blackKnight;
-    var blackBishop = new Image();
-    blackBishop.src = "Bishop_Black-10.png";
-    imgArray[4] = blackBishop;
-    var blackQueen = new Image();
-    blackQueen.src = "Queen_Black-10.png";
-    imgArray[5] = blackQueen;
-    var blackKing = new Image();
-    blackKing.src = "King_Black-10.png";
-    imgArray[6] = blackKing;
-    var whitePawn = new Image();
-    whitePawn.src = "Pawn_White-10.png";
-    imgArray[7] = whitePawn;
-    var whiteRook = new Image();
-    whiteRook.src = "Rook_White-10.png";
-    imgArray[8] = whiteRook;
-    var whiteKnight = new Image();
-    whiteKnight.src = "Knight_White-10.png";
-    imgArray[9] = whiteKnight;
-    var whiteBishop = new Image();
-    whiteBishop.src = "Bishop_White-10.png";
-    imgArray[10] = whiteBishop;
-    var whiteQueen = new Image();
-    whiteQueen.src = "Queen_White-10.png";
-    imgArray[11] = whiteQueen;
-    var whiteKing = new Image();
-    whiteKing.src = "King_White-10.png";
-    imgArray[12] = whiteKing;
 
-    //draw the chessboard
-    //ctx.fillRect(20,20,150,100);
-    console.log(chessPieces);
-    ctx.drawImage(imgArray[0], 0, 0);
-    
-    var startValue = 20;
-    var increment = 75;
-    var pieceX = 7;
-    var pieceY = 0;
-    for (var i = 0; i < 8; i++) {
-        for (var j = 0; j < 8; j++) {
-            if (pieceX < 0) {
-                pieceX = 7;
-            }
-            if (pieceY > 7) {
-                pieceY = 0;
-            }
-            var nextPiece = chessPieces[pieceX][pieceY];
-            console.log(nextPiece);
-            if (nextPiece == 13) {
+//ctx is the 2d graphics context of the canvas
+this.drawBoard = drawBoard;
+function drawBoard(ctx, imgArray){
+    //ctx.fillStyle='#FF0011';
+    //ctx.fillRect(0,0,80,100);
+    var testImage = new Image();
+    testImage.onload = function(){
+        ctx.drawImage(imgArray[0], 0, 0);
+        var startValue = 20;
+        var increment = 75;
+        var pieceX = 7;
+        var pieceY = 0;
+        for (var i = 0; i < 8; i++) {
+            for (var j = 0; j < 8; j++) {
+                if (pieceX < 0) {
+                    pieceX = 7;
+                }
+                if (pieceY > 7) {
+                    pieceY = 0;
+                }
+                var nextPiece = chessPieces[pieceX][pieceY];
+                if (nextPiece == 13) {
+                    pieceX--;
+                    continue;
+                }
+                
+                ctx.drawImage(imgArray[nextPiece], startValue + i * increment, startValue + j * increment);
                 pieceX--;
-                continue;
             }
-            ctx.drawImage(imgArray[1], startValue + i * increment, startValue + j * increment);
-            pieceX--;
+            pieceY++;
         }
-        pieceY++;
     }
+    testImage.src = "chessBoardImage.png";
+
+
 }
+
 }//end of chess "class"

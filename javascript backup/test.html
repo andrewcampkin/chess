@@ -4,6 +4,48 @@
 <html>
     <head>
 	<script src="testchess.js"></script>
+        <script>
+    var imgArray = new Array();
+    var img = new Image();
+    img.src = "chessBoardImage.png";
+    imgArray[0] = img;
+    var blackPawn = new Image();
+    blackPawn.src = "Pawn_Black-10.png";
+    imgArray[12] = blackPawn;
+    var blackRook = new Image();
+    blackRook.src = "Rook_Black-10.png";
+    imgArray[11] = blackRook;
+    var blackKnight = new Image();
+    blackKnight.src = "Knight_Black-10.png";
+    imgArray[10] = blackKnight;
+    var blackBishop = new Image();
+    blackBishop.src = "Bishop_Black-10.png";
+    imgArray[9] = blackBishop;
+    var blackQueen = new Image();
+    blackQueen.src = "Queen_Black-10.png";
+    imgArray[8] = blackQueen;
+    var blackKing = new Image();
+    blackKing.src = "King_Black-10.png";
+    imgArray[7] = blackKing;
+    var whitePawn = new Image();
+    whitePawn.src = "Pawn_White-10.png";
+    imgArray[6] = whitePawn;
+    var whiteRook = new Image();
+    whiteRook.src = "Rook_White-10.png";
+    imgArray[5] = whiteRook;
+    var whiteKnight = new Image();
+    whiteKnight.src = "Knight_White-10.png";
+    imgArray[4] = whiteKnight;
+    var whiteBishop = new Image();
+    whiteBishop.src = "Bishop_White-10.png";
+    imgArray[3] = whiteBishop;
+    var whiteQueen = new Image();
+    whiteQueen.src = "Queen_White-10.png";
+    imgArray[2] = whiteQueen;
+    var whiteKing = new Image();
+    whiteKing.src = "King_White-10.png";
+    imgArray[1] = whiteKing;
+        </script>
 	<!-- script src="chess.js"></script -->
     </head>
     <body>
@@ -38,21 +80,20 @@
         <script type="text/javascript">
             //this runs after the submit button gets hit, ie on page load.
             //pass the input values to the chess game code here somehow
+            
             var chessState = getFieldValue("chessString");
             var testchess = new ChessBoard(chessState);
             var xStart = getFieldValue("xStart");
             var yStart = getFieldValue("yStart");
             var xEnd = getFieldValue("xEnd");
             var yEnd = getFieldValue("yEnd");
-            //console.log("(" + xStart + ", " + yStart + "), (" + xEnd + ", " + yEnd + ")");
             var result = testchess.movehandler(xStart, yStart, xEnd, yEnd);
-            //console.log(result);
+            
             document.chessForm.chessString.value = testchess.boardState;
-            //console.log(testchess.boardState);
             testchess.printBoard();
             var canvas = document.getElementById('chessCanvas');
-            var ctx = canvas.getContext('2d');
-            testchess.drawBoard(ctx);
+            var ctx = canvas.getContext("2d");
+            testchess.drawBoard(ctx, imgArray);
         </script>
     </body>
 </html>
